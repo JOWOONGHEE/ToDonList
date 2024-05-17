@@ -5,6 +5,10 @@
 /.pnp
 .pnp.js
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+.yarn/install-state.gz
+>>>>>>> b9f1c0b82352171d1d6c6cc5a46cd8e941dde941
 =======
 .yarn/install-state.gz
 >>>>>>> b9f1c0b82352171d1d6c6cc5a46cd8e941dde941
@@ -32,6 +36,10 @@ yarn-error.log*
 .env*.local
 .env
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+.env.example
+>>>>>>> b9f1c0b82352171d1d6c6cc5a46cd8e941dde941
 =======
 .env.example
 >>>>>>> b9f1c0b82352171d1d6c6cc5a46cd8e941dde941
