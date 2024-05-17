@@ -1,0 +1,296 @@
+@font-face {
+    font-family: "ColfaxAI";
+    src:
+      url(https://cdn.openai.com/API/fonts/ColfaxAIRegular.woff2) format("woff2"),
+      url(https://cdn.openai.com/API/fonts/ColfaxAIRegular.woff) format("woff");
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: "ColfaxAI";
+    src:
+      url(https://cdn.openai.com/API/fonts/ColfaxAIBold.woff2) format("woff2"),
+      url(https://cdn.openai.com/API/fonts/ColfaxAIBold.woff) format("woff");
+    font-weight: bold;
+    font-style: normal;
+  }
+  
+  /* 반응형 스타일 */
+  @media (max-width: 768px) {
+    .messageInputContainer {
+      flex-direction: column;
+      padding: 10px;
+    }
+  
+    .messageInput, .sendButton {
+      width: 100%; /* 모바일 화면에서는 너비를 100%로 조정 */
+      margin: 5px 0; /* 수직 스택에서의 간격 */
+    }
+  
+    .messageInput {
+      margin-bottom: 20px; /* 입력 필드와 버튼 사이의 간격 */
+    }
+  
+    .chatContainer {
+      height: 40vh; /* 화면의 60%만큼 높이를 가짐 */
+      overflow-y: auto; /* 수직 스크롤이 필요할 때만 스크롤이 표시됨 */
+    }
+  
+    /* 버튼 크기 조정 */
+    .inputSubmit, .inputButton {
+      width: calc(50% - 5px); /* 버튼의 너비를 50%로 설정하여 두 버튼이 같은 줄에 표시되도록 함 */
+      margin-right: 5px; /* 버튼 사이의 간격 */
+    }
+  
+    .inputButton:last-child {
+      margin-right: 0; /* 마지막 버튼의 오른쪽 여백 제거 */
+    }
+  
+  }
+  /* 태블릿 화면에 대한 스타일 */
+  @media (max-width: 1024px) {
+    .h3 {
+      font-size: 28px;
+      line-height: 36px;
+      margin: 16px 0 30px; /* margin을 줄여 더 많은 여백을 확보합니다. */
+    }
+  
+    .chatContainer, .form {
+      height: 60vh; /* 화면의 60%만큼 높이를 가짐 */
+      overflow-y: auto; /* 수직 스크롤이 필요할 때만 스크롤이 표시됨 */
+      padding: 15px;
+      margin-bottom: 80px; /* 화면 하단 여백을 추가합니다. */
+    }
+  
+    .messageInputContainer {
+      padding: 15px 20px; /* 내부 padding을 조정합니다. */
+    }
+  
+    .inputSubmit, .inputButton {
+      padding: 12px 16px; /* 버튼의 padding을 조정합니다. */
+      font-size: 14px; /* 버튼 텍스트 크기를 줄입니다. */
+    }
+  
+    .textarea, .inputText {
+      padding: 10px 12px; /* 입력 필드의 padding을 조정합니다. */
+      font-size: 14px; /* 입력 필드 텍스트 크기를 줄입니다. */
+      margin-bottom: 20px; /* 입력 필드 간 여백을 조정합니다. */
+    }
+  }
+  
+  /* 큰 화면/데스크탑에 대한 스타일 */
+  @media (min-width: 1025px) {
+    .body {
+      max-width: 1024px; /* 전체 컨텐츠의 최대 너비를 조정합니다. */
+      margin: 0 auto; /* 가운데 정렬합니다. */
+      padding-top: 80px; /* 상단 여백을 조정합니다. */
+      padding-bottom: 80px; /* 하단 여백을 조정합니다. */
+    }
+  
+    .h3 {
+      font-size: 36px;
+      line-height: 44px;
+      margin-bottom: 40px; /* 더 많은 여백을 확보합니다. */
+    }
+  
+    .chatContainer, .form {
+      height: 60vh; /* 화면의 60%만큼 높이를 가짐 */
+      overflow-y: auto; /* 수직 스크롤이 필요할 때만 스크롤이 표시됨 */
+      padding: 20px;
+      margin-bottom: 100px; /* 화면 하단 여백을 추가합니다. */
+    }
+  
+    .messageInputContainer {
+      padding: 20px;
+    }
+  
+    .textarea, .inputText {
+      padding: 14px 16px;
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+  
+    .inputSubmit, .inputButton {
+      padding: 14px 20px;
+      font-size: 16px;
+    }
+  }
+  
+  .body,
+  .input {
+    font-size: 16px;
+    line-height: 24px;
+    color: #353740;
+    font-family: "ColfaxAI", Helvetica, sans-serif;
+  }
+  
+  .body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 60px;
+  }
+  
+  .icon {
+    width: 34px;
+  }
+  
+  .h3 {
+    font-size: 32px;
+    line-height: 40px;
+    font-weight: bold;
+    color: #202123;
+    margin: 16px 0 40px;
+  }
+  
+  .chatContainer {
+    height: 60vh; /* 화면의 60%만큼 높이를 가짐 */
+    overflow-y: auto; /* 수직 스크롤이 필요할 때만 스크롤이 표시됨 */
+    max-width: 80%;
+    width: 80vw;
+    margin: 0 auto;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 160px;
+    margin-bottom: 20px;
+    overflow: auto;
+  }
+  
+  .userMessage,
+  .assistantMessage {
+    padding: 12px 16px;
+    border: 1px solid #10a37f;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    max-width: 80%;
+    word-wrap: break-word;
+  }
+  
+  .userMessage {
+    align-self: flex-end;
+    background-color: #daf8e3;
+  }
+  
+  .assistantMessage {
+    align-self: flex-start;
+    background-color: #f1f1f1;
+  }
+  
+  .messageInputContainer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: #fff;
+    border-top: 1px solid #eaeaea;
+    display: flex;
+    justify-content: center;
+    height: auto;
+    padding-bottom: 20px;
+  }
+  
+  .heading1 {
+    text-align: center; /* Centers text horizontally */
+    width: 100%; /* Ensures the heading takes full width of its container */
+    margin: 0 auto; /* Applies automatic horizontal margins */
+  }
+  
+  .form {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    flex-direction: column;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .inputGroup {
+    display: flex;
+    align-items: center; /* 세로 정렬 설정 */
+  }
+  
+  .textInput {
+    padding: 1px 2px;
+    border: 1px solid #10a37f;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    width: 90%;
+    min-height: 50px;
+    resize: both;
+    overflow: auto;
+    margin-right: 8px;
+    flex: 1;
+  }
+  
+  .sendButton {
+    background-color: #007bff; /* 버튼의 배경색을 설정합니다. */
+    border: none; /* 버튼의 테두리를 제거합니다. */
+    padding: 10px; /* 버튼의 내부 여백을 추가합니다. */
+    border-radius: 4px; /* 버튼의 모서리를 둥글게 만듭니다. */
+    margin-left: 10px; /* 입력란과 버튼 사이에 여백을 추가합니다. */
+  }
+  
+  .sendIcon {
+    fill: #fff; /* 아이콘의 색상을 설정합니다. */
+  }
+  /*입력 박스*/
+  .sendSubmit {
+    background-color: #fff;
+    border:none;
+    border-radius: 30px;
+  }
+  
+  /*입력 아이콘*/
+  .sendIcon {
+    width: 24px;
+    height: 24px;
+    fill: #000;
+  }
+  
+  /*  */
+  .buttonGroup {
+    display: flex;
+  }
+  
+  .clearButton {
+    height: 30px;
+    flex-grow: 1;
+    background-color: #fff;
+    margin-right: 5px;
+    border-radius: 20px;
+  }
+  .saveButton {
+    flex-grow: 1;
+    background-color: #fff;
+    margin-right: 5px;
+    border-radius: 20px;
+  }
+  .historyButton {
+    flex-grow: 1;
+    background-color: #fff;
+    margin-right: 5px;
+    border-radius: 20px;
+  }
+  
+  .inputText {
+    padding: 12px 16px;
+    border: 1px solid #10a37f;
+    border-radius: 4px;
+    margin-bottom: 24px;
+  }
+  
+  .placeholder {
+    color: #8e8ea0;
+    opacity: 1;
+  }
+  
+  .result {
+    font-weight: bold;
+    margin-top: 40px;
+  }
+  
