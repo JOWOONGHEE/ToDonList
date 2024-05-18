@@ -27,6 +27,10 @@ app.post('/api/messages', async (req, res) => {
   }
 });
 
+app.post('/api/saveChat', (req, res) => {
+  // 채팅 저장 로직
+  res.status(200).send('Chat saved');
+});
 //로그인 라우트
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;

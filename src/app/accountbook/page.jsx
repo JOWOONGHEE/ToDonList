@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 import Chart from 'chart.js/auto';
-import styles from '../styles/accountbook.module.css';
+import styles from '../_styles/accountbook.module.css';
 
 let myChart;
 
