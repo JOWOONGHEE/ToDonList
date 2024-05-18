@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'kakao_regular';
+  src: url('/fonts/kakao_regular.tff')
+}
+
 :root {
   --max-width: 1100px;
   --border-radius: 12px;

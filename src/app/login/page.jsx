@@ -67,21 +67,20 @@ const Login = () => {
             </div>
             <p>계정이 없으신가요? <a href="/signup" className="text-blue-500 hover:text-blue-700">회원가입</a></p>
             <div className="flex flex-col space-y-4 justify-center items-center">
-
+            {/* 구글 로그인 */}
             <div className="flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-                <button className="flex items-center bg-white dark:bg-gray-300 border border-gray-100 rounded-lg shadow-md px-4 py-3 text-sm font-medium font-sans text-gray-800 dark:text-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 w-48">
-                    <img src="/google_login.svg" alt="Google" className="w-6 h-6 mr-6" />
-                    <span>구글 로그인</span>
-                    
+                <button className="flex items-center bg-white dark:bg-gray-300 border border-gray-100 rounded-lg shadow-md px-3 py-3 text-sm text-gray-800 dark:text-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 h-12 w-48">
+                    <img src="/google_login.svg" alt="Google" className="w-5 h-5 mr-6" />
+                    <span className='ml-3 font-semibold font-kakao'>구글 로그인</span>
                 </button>
             </div>
-
+            {/* 카카오 로그인 */}
             <button onClick={() => signIn("kakao")} className="flex justify-center items-center w-full">
-                <img src="/assets/kakao_login.png" alt="Kakao" className="w-48 h-12"/>
+                <img src="/assets/kakao_login2.png" alt="Kakao" className="w-48 h-12"/>
             </button>              
-
+            {/* 네이버 로그인 */}
             <button onClick={() => signIn("naver")} className="flex justify-center items-center w-full">
-                <img src="/assets/naver_login.png" alt="Naver" className="w-48 h-12" />
+                <img src="/assets/naver_login2.png" alt="Naver" className="w-48 h-12" />
             </button>
                         
         </div>

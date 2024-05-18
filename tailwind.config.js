@@ -8,7 +8,14 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily:{
+        'kakao':['kakao_regula']
+      },
+      fontWeight: {
+        'medi_semibold': 550
+      }
+    },
   },
   plugins: [],
 }
