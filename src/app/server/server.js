@@ -31,17 +31,22 @@ app.post('/api/saveChat', (req, res) => {
   // 채팅 저장 로직
   res.status(200).send('Chat saved');
 });
+
+
+const TEST_EMAIL = "test@test.com";
+const TEST_PASSWORD = "test1234";
+
 //로그인 라우트
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  // 여기에서 로그인 로직을 구현합니다.
-  // 예를 들어, 사용자 이름과 비밀번호가 맞다면:
-  if (username === 'test' && password === '1234') {
-    res.json({ success: true, token: 'fake-jwt-token', name: 'Test User', email: 'test@example.com' });
-  } else {
-    res.status(401).json({ success: false, message: 'Authentication failed' });
-  }
-});
+// app.post('/login', (req, res) => {
+//   const { email, password } = req.body;
+//   // 여기에서 로그인 로직을 구현합니다.
+//   // 예를 들어, 사용자 이름과 비밀번호가 맞다면:
+//   if (email === TEST_EMAIL && password === TEST_PASSWORD) {
+//     res.json({ success: true, token: 'fake-jwt-token', name: 'Test User', email: 'test@test.com' });
+//   } else {
+//     res.status(401).json({ success: false, message: 'Authentication failed' });
+//   }
+// });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`서버가 ${PORT}포트에서 실행 중입니다...`));

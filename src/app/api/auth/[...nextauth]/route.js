@@ -12,16 +12,22 @@ export const authOptions =({
     CredentialsProvider({
       name: "credentials",
       credentials: {
-          email: { label: "Email", type: "email", placeholder: "test@test.com" },
-          password: { label: "Password", type: "password" }
+          email: { label: "Email", type: "email", placeholder: "Email" },
+          password: { label: "Password", type: "password", placeholder: "비밀번호" }
       },
       // Sign up 버튼을 누르면 들어오는 함수
       // 해당 부분에서 들어온 데이터를 가지고 인증을 진행하면 된다.
       // (지금은 무조건 인증되는 방식으로 처리되어있음)
       async authorize(credentials){
+        const testuser = { email: "111@111.com", password: "1234" };
+        // 여기서 이메일과 비밀번호 검증 로직을 추가합니다.
+        
         const client = await clientPromise;
         const db = client.db('forum');
         let user = await db.collection('user_cred').findOne({email : credentials.email})
+        if (credentials.email === "111@111.com" && credentials.password === "1234") {
+          return testuser;
+        } 
         if (!user) {
           console.log('해당 이메일은 없음');
           return null
@@ -31,7 +37,9 @@ export const authOptions =({
           console.log('비번틀림');
           return null
         }
+        
         return user
+        
       }
   }),
   GoogleProvider({
@@ -41,11 +49,6 @@ export const authOptions =({
   KakaoProvider({
     clientId:process.env.KAKAO_CLIENT_ID,
     clientSecret:process.env.KAKAO_CLIENT_SECRET,
-    authorization: {
-      params: {
-        redirect_uri: process.env.KAKAO_REDIRECT_URI,
-      },
-    },
   }),
   NaverProvider({
     clientId:process.env.NAVER_CLIENT_ID,
@@ -57,18 +60,26 @@ export const authOptions =({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    session: async ({ session, token }) => {
-      session.user = token.user;  
-      return session;
-    },
     async jwt(token, user) {
       if (user) {
         token.user = {};
         token.user.name = user.name
         token.user.email = user.email
+      } else if (token.testuser) {
+        token.email = token.testuser.email;
+        token.password = token.testuser.password;
       }
       return token;
-    }
+    },
+    session: async ({ session, token }) => {
+      if (token.user) {
+        session.user = {
+          name: token.user.name,
+          email: token.user.email
+        };
+      }
+      return session;
+    },
   },
   pages: {
     signIn: "/login",

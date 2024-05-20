@@ -1,39 +1,30 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+import Login from './login/page.jsx';
 import React from 'react';
-import Link from 'next/link';
 import './globals.css'
+import { useSession, SessionProvider } from 'next-auth/react';
 
-function HomePage() {
-  
+function Home() {
   return (
-    <div>
-      <h1>환영합니다!</h1>
-      <ul>
-        <li>
-          <Link href="/accountbook"
-            style={{ cursor: 'pointer' }}>가계부
-          </Link>
-        </li>
-        <li>
-          <Link href="/aichat"
-            style={{ cursor: 'pointer' }}>ai챗
-          </Link>
-        </li>
-        <li>
-          <Link href="/login"
-            style={{ cursor: 'pointer' }}>로그인
-          </Link>
-        </li>
-        <li>
-          <Link href="/main"
-            style={{ cursor: 'pointer' }}>메인
-          </Link>
-        </li>
-      </ul>
-    </div>
+      <Login/>
   );
 }
 
-export default HomePage;
+export default Home;
+
+// function MyApp({ Component, pageProps }) {
+  
+//   const { data: session, status } = useSession();
+
+//   return (
+//     <>
+//       <SessionProvider session={session}>
+//         <Login />
+//         <Component {...pageProps} />
+//       </SessionProvider>
+//     </>
+//   );
+// }
+
+// export default MyApp;
+
 

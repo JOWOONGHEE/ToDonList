@@ -1,7 +1,6 @@
 "use client"
 import React, { useState } from 'react';
 import axios from 'axios';
-import { signUp } from 'next-auth/react';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -11,17 +10,24 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
+    const api = axios.create({
+      baseURL: 'http://localhost:3000/api'
+    });
+    
+    // 이제 api 인스턴스를 사용하여 요청을 보낼 때, baseURL이 자동으로 적용됩니다.
+    //api.post('/auth/signup', { email, password });
     async function handleSubmit(event) {
         event.preventDefault();
-    
+
         if (!email.match(/^[^@]+@[^@]+\.[^@]+$/)) {
             alert("이메일 형식이 올바르지 않습니다.");
             return;
         }
-    
+        // 요청 데이터 로깅
+        console.log("Sending data:", { email, password });
+
         try {
-            const response = await axios.post('/api/auth/signup', { email, password });
+            const response = await api.post('/auth/signup', { email, password });
             if (response.status === 200) {
                 console.log("회원가입 성공", response.data);
                 // 추가적인 성공 처리 로직, 예: 페이지 리다이렉션
@@ -31,7 +37,7 @@ const Signup = () => {
             }
         } catch (error) {
             console.error("회원가입 실패", error.response);
-            alert("회원가입에 실패했습니다. 다시 시도해주세요.");
+            alert(`회원가입에 실패했습니다: ${error.response.data.error}`);
         }
     };
 

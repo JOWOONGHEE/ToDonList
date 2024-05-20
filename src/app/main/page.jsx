@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from 'react';
-
+import { signOut } from 'next-auth/react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -78,6 +78,9 @@ const Main = () => {
 
   return (
     <div className={styles.container}>
+      <button onClick={() => signOut({ callbackUrl: '/login' })}>
+        로그아웃
+      </button>
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
         initialView="dayGridMonth"
