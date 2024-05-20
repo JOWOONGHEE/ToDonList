@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const client = await connectToDatabase(process.env.MONGODB_URI);
-      const db = client.db();
+      const db = client.db('Chat');
       const collection = db.collection("chats");
 
       const chats = await collection.find().toArray();

@@ -20,6 +20,7 @@
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "chart.js": "^4.4.2",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "eslint": "8.43.0",
     "eslint-config-next": "13.4.6",
@@ -31,6 +32,7 @@
     "postcss-rtl": "^2.0.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-router-dom": "^6.23.1",
     "sweetalert2": "^11.11.0"
   },
   "devDependencies": {

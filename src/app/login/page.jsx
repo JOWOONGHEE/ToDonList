@@ -27,20 +27,30 @@ const Login = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        console.log("로그인 시도");
+        console.log(emailRef.current.value);
+        console.log(passwordRef.current.value);
         const email = emailRef.current.value;
         const password = passwordRef.current.value;
 
-        const res = await signIn("credentials",{
-            redirect: false,
-            email, 
-            password
-        });
+        try {
+            const result = await signIn('credentials', {
+              redirect: false,
+              email,
+              password
+            });
         
-        if (res?.ok) {
-            router.push('/main');
-        } else {
-            console.error("로그인 실패");
-        }
+            if (result.error) {
+              console.error('로그인 실패:', result.error);
+              alert('로그인 실패: ' + result.error);
+            } else {
+              console.log('로그인 성공');
+              router.push('/main'); // 성공 시 대시보드로 리디렉션
+            }
+          } catch (error) {
+            console.error('로그인 처리 중 오류 발생:', error);
+            alert('로그인 처리 중 오류 발생');
+          }
     };
 
     useEffect(() => {
@@ -52,13 +62,6 @@ const Login = () => {
         }
       }, [sessionStatus, router]);
 
-    // if (status === 'loading') {
-    //     return <p>Loading....</p>;
-    // }
-    // if (status === 'authenticated') {
-    //     router.push('/main');
-    //     return <button onClick={() => signOut()}>로그아웃</button>;
-    // }
     return (
         <main className='flex min-h-screen flex-col items-center space-y-8 p-16 sm:p-8 md:p-12'>
             <h1 className='text-4xl'>로그인</h1>

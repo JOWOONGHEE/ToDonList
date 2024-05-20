@@ -8,7 +8,7 @@ export default async function handler(req, res) {
       }
 
       const client = await MongoClient.connect(process.env.MONGODB_URI);
-      const db = client.db();
+      const db = client.db('Chat');
       const collection = db.collection("chats");
 
       // insertMany를 사용하여 여러 문서를 삽입

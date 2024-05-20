@@ -4,7 +4,7 @@ import GoogleProvider from "next-auth/providers/google"
 import KakaoProvider from "next-auth/providers/kakao"
 import NaverProvider from "next-auth/providers/naver";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
-import clientPromise from "../../../../lib/mongodb";
+import connectDB from "../../../../lib/mongodb";
 import bcrypt from 'bcrypt';
 
 export const authOptions =({
@@ -22,7 +22,7 @@ export const authOptions =({
         const testuser = { email: "111@111.com", password: "1234" };
         // 여기서 이메일과 비밀번호 검증 로직을 추가합니다.
         
-        const client = await clientPromise;
+        const client = await connectDB;
         const db = client.db('forum');
         let user = await db.collection('user_cred').findOne({email : credentials.email})
         if (credentials.email === "111@111.com" && credentials.password === "1234") {
@@ -45,15 +45,17 @@ export const authOptions =({
   GoogleProvider({
     clientId:process.env.GOOGLE_CLIENT_ID,
     clientSecret:process.env.GOOGLE_CLIENT_SECRET,
-    allowDangerousEmailAccountLinking: true,
+    allowDangerousEmailAccountLinking: true, // 이전에 연동된 계정이 있어도 새로 연동할 수 있도록 함
   }),
   KakaoProvider({
     clientId:process.env.KAKAO_CLIENT_ID,
     clientSecret:process.env.KAKAO_CLIENT_SECRET,
+    allowDangerousEmailAccountLinking: true,
   }),
   NaverProvider({
     clientId:process.env.NAVER_CLIENT_ID,
     clientSecret:process.env.NAVER_CLIENT_SECRET,
+    allowDangerousEmailAccountLinking: true,
   }),
   ],
   session: {
@@ -93,9 +95,11 @@ export const authOptions =({
   },
   pages: {
     signIn: "/login",
+    signUp: "/signup",
   },
   
-  adapter: MongoDBAdapter(clientPromise),
+  adapter: MongoDBAdapter(connectDB),
+  database: process.env.MONGODB_URI,
   secret: process.env.NEXTAUTH_SECRET
 })
 

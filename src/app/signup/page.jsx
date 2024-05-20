@@ -3,15 +3,19 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import path from 'path';
+import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 
 const Signup = () => {
+    
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const api = axios.create({
-      baseURL: 'http://localhost:3000/api'
+      baseURL: 'http://localhost:5000/api'
     });
     
     // 이제 api 인스턴스를 사용하여 요청을 보낼 때, baseURL이 자동으로 적용됩니다.
@@ -27,17 +31,25 @@ const Signup = () => {
         console.log("Sending data:", { email, password });
 
         try {
-            const response = await api.post('/auth/signup', { email, password });
+            const response = await api.post('/signup', { email, password });
             if (response.status === 200) {
                 console.log("회원가입 성공", response.data);
                 // 추가적인 성공 처리 로직, 예: 페이지 리다이렉션
+                alert("회원가입이 완료되었습니다.");
+                router.push('/login');
             } else {
-                console.error("회원가입 실패");
+                console.error("회원가입 실패", response.status);
                 alert("회원가입에 실패했습니다. 다시 시도해주세요.");
             }
         } catch (error) {
-            console.error("회원가입 실패", error.response);
-            alert(`회원가입에 실패했습니다: ${error.response.data.error}`);
+            console.error("회원가입 실패", error);
+            if (error.response) {
+                // 서버 응답이 있는 경우
+                alert(`회원가입에 실패했습니다: ${error.response.data.error}`);
+            } else {
+                // 서버 응답이 없는 경우
+                alert("회원가입 요청에 실패했습니다. 서버 연결을 확인해주세요.");
+            }
         }
     };
 
