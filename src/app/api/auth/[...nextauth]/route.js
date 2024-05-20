@@ -45,6 +45,7 @@ export const authOptions =({
   GoogleProvider({
     clientId:process.env.GOOGLE_CLIENT_ID,
     clientSecret:process.env.GOOGLE_CLIENT_SECRET,
+    allowDangerousEmailAccountLinking: true,
   }),
   KakaoProvider({
     clientId:process.env.KAKAO_CLIENT_ID,
@@ -60,6 +61,15 @@ export const authOptions =({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      const isAllowedToSignIn = true;
+      if (isAllowedToSignIn) {
+        return true;
+      } else {
+        // 계정 연결 문제로 로그인 거부
+        return false;
+      }
+    },
     async jwt(token, user) {
       if (user) {
         token.user = {};

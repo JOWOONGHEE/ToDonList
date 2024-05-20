@@ -60,7 +60,7 @@ const Login = () => {
     //     return <button onClick={() => signOut()}>로그아웃</button>;
     // }
     return (
-        <main className='flex min-h-screen flex-col items-center space-y-8 p-16 sm:p-8 md:p-12 lg:p-24'>
+        <main className='flex min-h-screen flex-col items-center space-y-8 p-16 sm:p-8 md:p-12'>
             <h1 className='text-4xl'>로그인</h1>
             <div>
                 <div>
