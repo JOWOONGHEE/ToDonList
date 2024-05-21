@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, '비밀번호는 필수입니다.'],
-    minlength: 7,
+    minlength: 6,
     trim: true
   }
 }, {

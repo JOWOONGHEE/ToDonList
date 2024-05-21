@@ -22,7 +22,7 @@ export const authOptions =({
         const testuser = { email: "111@111.com", password: "1234" };
         // 여기서 이메일과 비밀번호 검증 로직을 추가합니다.
         
-        const client = await connectDB;
+        const client = await connectDB();
         const db = client.db('forum');
         let user = await db.collection('user_cred').findOne({email : credentials.email})
         if (credentials.email === "111@111.com" && credentials.password === "1234") {

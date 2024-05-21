@@ -27,12 +27,16 @@ const Signup = () => {
             alert("이메일 형식이 올바르지 않습니다.");
             return;
         }
+        if (password.length < 6) {
+            alert('비밀번호는 6자 이상이어야 합니다.');
+            return;
+        }
         // 요청 데이터 로깅
         console.log("Sending data:", { email, password });
 
         try {
             const response = await api.post('/signup', { email, password });
-            if (response.status === 200) {
+            if (response.status === 201) {
                 console.log("회원가입 성공", response.data);
                 // 추가적인 성공 처리 로직, 예: 페이지 리다이렉션
                 alert("회원가입이 완료되었습니다.");

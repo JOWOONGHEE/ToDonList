@@ -2,7 +2,7 @@
 import Head from "next/head";
 // import { useRouter } from "next/router";
 import React, { useState, useEffect, useRef } from "react";
-import styles from "../_styles/aichat.module.css";
+import styles from "../styles/aichat.module.css";
 import OpenAI from "openai";
 import { usePathname, useRouter } from 'next/navigation';
 

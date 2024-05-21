@@ -19,6 +19,8 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true 
   .then(() => console.log('MongoDB에 연결되었습니다...'))
   .catch(err => console.error('MongoDB 연결 실패:', err));
 
+const db = mongoose.connection.useDb("forum");
+
 app.post('/api/messages', async (req, res) => {
   try {
     const { role, content } = req.body;
@@ -35,9 +37,28 @@ app.post('/api/saveChat', (req, res) => {
   res.status(200).send('Chat saved');
 });
 
-app.post('/api/signup', (req, res) => {
-  // 회원가입 로직
-  res.status(200).send('Signup success');
+app.post('/api/signup', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    // 입력 데이터 검증
+    if (!email.includes('@')) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password too short' });
+    }
+
+    // 회원가입 로직 (데이터베이스 저장 등)
+    const result = await db.collection('user_cred').insertOne({ email, password });
+    if (result.insertedCount === 0) {
+      throw new Error('Signup failed');
+    }
+
+    res.status(201).json({ message: 'Signup successful', userId: result.insertedId });
+  } catch (error) {
+    console.error('Signup Error:', error);
+    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+  }
 });
 
 const PORT = process.env.PORT || 5000;

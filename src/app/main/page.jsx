@@ -7,7 +7,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import Swal from 'sweetalert2';
-import styles from '../_styles/main.module.css'; // CSS 모듈 임포트
+import styles from '../styles/main.module.css'; // CSS 모듈 임포트
 
 const Main = () => {
   const [events, setEvents] = useState([]);
