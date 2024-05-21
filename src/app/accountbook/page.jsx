@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 import Chart from 'chart.js/auto';
-import styles from '../_styles/accountbook.module.css';
+import styles from '../styles/accountbook.module.css';
 
 let myChart;
 
@@ -206,102 +206,207 @@ export default function accountBook() {
     amountInput.value = formatAmount(formattedAmount);
   };
 
-  return (
-    <div>
-      <div className={styles.summary}>
-        <h3>지출</h3>
-        <p id="totalExpense">0원</p>
-        <h3>수입</h3>
-        <p id="totalIncome">0원</p>
-      </div>
-
-      <h1>가계부</h1>
-
-      <h2>지출 목록</h2>
-      <div className={styles.transactionSection}>
+  return (  
+    <div className="min-h-screen bg-green-100 flex flex-col items-center p-8">
+        <div className="text-4xl font-bold text-black mb-6">가계부</div>
+        <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-6 flex flex-col">
+        <div className={styles.summary}>
+            <h3>지출</h3>
+            <p id="totalExpense">0원</p>
+            <h3>수입</h3>
+            <p id="totalIncome">0원</p>
+          </div>
+          <div className="w-full">
+            <h2 className="text-lg font-semibold">지출 목록</h2>
+            <div className="mb-4 flex items-center space-x-2">
+                <label htmlFor="filterExpense">필터링 및 정렬:</label>
+                <select id="filterExpense" onChange={() => filterTransactions('expense')}>
+                    <option value="time">시간순</option>
+                    <option value="money">금액순</option>
+                    <option value="category">카테고리별</option>
+                </select>
+            </div>
+    
+            <form id="transactionFormExpense">
+                <label htmlFor="amountExpense">금액:</label>
+                <input type="text" id="amountExpense" name="amountExpense" required onInput={() => onAmountChange('expense')} />
+                <label htmlFor="categoryExpense">카테고리:</label>
+                <select id="categoryExpense" name="categoryExpense">
+                    <option value="식비">식비</option>
+                    <option value="교통비">교통비</option>
+                    {/* 나머지 옵션들 */}
+                </select>
+                <label htmlFor="memoExpense">메모:</label>
+                <input type="text" id="memoExpense" name="memoExpense" />
+                <button type="button" onClick={() => addTransaction('expense')}>지출 추가</button>
+            </form>
+    
+            <table id="expenseTable">
+                <thead>
+                    <tr>
+                        <th>시간</th>
+                        <th>금액</th>
+                        <th>카테고리</th>
+                        <th>메모</th>
+                        <th>작업</th>
+                    </tr>
+                </thead>
+                <tbody id="expenseList">
+                </tbody>
+            </table>
+          </div>
+    
+          {/* 수입 목록 */}
+    
+          <h2>수입 목록</h2>
+          <div className={styles.transactionSection}>
+            <div>
+                <label htmlFor="filterIncome">필터링 및 정렬:</label>
+                <select id="filterIncome" onChange={() => filterTransactions('income')}>
+                    <option value="time">시간순</option>
+                    <option value="money">금액순</option>
+                    <option value="category">카테고리별</option>
+                </select>
+            </div>
+    
+            <form id="transactionFormIncome">
+                <label htmlFor="amountIncome">금액:</label>
+                <input type="text" id="amountIncome" name="amountIncome" required onInput={() => onAmountChange('income')} />
+                <label htmlFor="categoryIncome">카테고리:</label>
+                <select id="categoryIncome" name="categoryIncome">
+                    <option value="월급">월급</option>
+                    <option value="부수입">부수입</option>
+                    {/* 나머지 옵션들 */}
+                </select>
+                <label htmlFor="memoIncome">메모:</label>
+                <input type="text" id="memoIncome" name="memoIncome" />
+                <button type="button" onClick={() => addTransaction('income')}>수입 추가</button>
+            </form>
         <div>
-            <label htmlFor="filterExpense">필터링 및 정렬:</label>
-            <select id="filterExpense" onChange={() => filterTransactions('expense')}>
-                <option value="time">시간순</option>
-                <option value="money">금액순</option>
-                <option value="category">카테고리별</option>
-            </select>
+            <table id="incomeTable">
+                <thead>
+                    <tr>
+                        <th>시간</th>
+                        <th>금액</th>
+                        <th>카테고리</th>
+                        <th>메모</th>
+                        <th>작업</th>
+                    </tr>
+                </thead>
+                <tbody id="incomeList">
+                </tbody>
+            </table>
+          </div>
         </div>
-
-        <form id="transactionFormExpense">
-            <label htmlFor="amountExpense">금액:</label>
-            <input type="text" id="amountExpense" name="amountExpense" required onInput={() => onAmountChange('expense')} />
-            <label htmlFor="categoryExpense">카테고리:</label>
-            <select id="categoryExpense" name="categoryExpense">
-                <option value="식비">식비</option>
-                <option value="교통비">교통비</option>
-                {/* 나머지 옵션들 */}
-            </select>
-            <label htmlFor="memoExpense">메모:</label>
-            <input type="text" id="memoExpense" name="memoExpense" />
-            <button type="button" onClick={() => addTransaction('expense')}>지출 추가</button>
-        </form>
-
-        <table id="expenseTable">
-            <thead>
-                <tr>
-                    <th>시간</th>
-                    <th>금액</th>
-                    <th>카테고리</th>
-                    <th>메모</th>
-                    <th>작업</th>
-                </tr>
-            </thead>
-            <tbody id="expenseList">
-            </tbody>
-        </table>
-      </div>
-
-      {/* 수입 목록 */}
-
-      <h2>수입 목록</h2>
-      <div className={styles.transactionSection}>
-        <div>
-            <label htmlFor="filterIncome">필터링 및 정렬:</label>
-            <select id="filterIncome" onChange={() => filterTransactions('income')}>
-                <option value="time">시간순</option>
-                <option value="money">금액순</option>
-                <option value="category">카테고리별</option>
-            </select>
+          <div id="chartContainer" className={styles.chartContainer}>
+            <canvas id="myChart"></canvas>
+          </div>
         </div>
-
-        <form id="transactionFormIncome">
-            <label htmlFor="amountIncome">금액:</label>
-            <input type="text" id="amountIncome" name="amountIncome" required onInput={() => onAmountChange('income')} />
-            <label htmlFor="categoryIncome">카테고리:</label>
-            <select id="categoryIncome" name="categoryIncome">
-                <option value="월급">월급</option>
-                <option value="부수입">부수입</option>
-                {/* 나머지 옵션들 */}
-            </select>
-            <label htmlFor="memoIncome">메모:</label>
-            <input type="text" id="memoIncome" name="memoIncome" />
-            <button type="button" onClick={() => addTransaction('income')}>수입 추가</button>
-        </form>
-
-        <table id="incomeTable">
-            <thead>
-                <tr>
-                    <th>시간</th>
-                    <th>금액</th>
-                    <th>카테고리</th>
-                    <th>메모</th>
-                    <th>작업</th>
-                </tr>
-            </thead>
-            <tbody id="incomeList">
-            </tbody>
-        </table>
       </div>
-
-      <div id="chartContainer" className={styles.chartContainer}>
-        <canvas id="myChart"></canvas>
-      </div>
-    </div>
   );
-};
+ };
+//     <div className="min-h-screen bg-green-100 flex flex-col items-center p-8">
+//         <div className="text-4xl font-bold text-black mb-6">가계부</div>
+//         <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-6 flex flex-col">
+//             <div className={styles.summary}>
+//             <h3>지출</h3>
+//             <p id="totalExpense">0원</p>
+//             <h3>수입</h3>
+//             <p id="totalIncome">0원</p>
+//             </div>
+//             <div className="w-full">
+//             <h2 className="text-lg font-semibold">지출 목록</h2>
+//             <form className="mb-4 flex items-center space-x-2">
+//                 <label className="whitespace-nowrap" htmlFor="filterExpense">필터링 및 정렬:</label>
+//                 <select id="filterExpense" onChange={() => filterTransactions('expense')}>
+//                     <option value="time" className="border p-2 rounded">시간순</option>
+//                     <option value="money" className="border p-2 rounded">금액순</option>
+//                     <option value="category" className="border p-2 rounded">카테고리별</option>
+//                 </select>
+//                 <div id="transactionFormExpense">
+//                     <label htmlFor="amountExpense">금액:</label>
+//                     <input type="text" id="amountExpense" name="amountExpense" required onInput={() => onAmountChange('expense')} />
+//                     <label htmlFor="categoryExpense">카테고리:</label>
+//                     <select id="categoryExpense" name="categoryExpense">
+//                         <option value="식비">식비</option>
+//                         <option value="교통비">교통비</option>
+//                         {/* 나머지 옵션들 */}
+//                     </select>
+//                     <label htmlFor="memoExpense">메모:</label>
+//                     <input type="text" id="memoExpense" name="memoExpense" />
+//                     <button type="button" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+//                         onClick={() => addTransaction('expense')} >지출 추가</button>
+//                 </div>
+               
+//             </form>
+//             <table className="w-full">
+//                 <thead>
+//                 <tr>
+//                     <th>시간</th>
+//                     <th>금액</th>
+//                     <th>카테고리</th>
+//                     <th>메모</th>
+//                     <th>조치</th>
+//                 </tr>
+//                 </thead>
+//                 <tbody id="expenseList" className="overflow-y-auto h-48">
+//                 {expenses.map((expense, index) => (
+//                     <tr key={index}>
+//                     <td>{expense.time}</td>
+//                     <td>{expense.amount}원</td>
+//                     <td>{expense.category}</td>
+//                     <td>{expense.memo}</td>
+//                     <td>
+//                         <button onClick={() => handleDelete('expense', expense.id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+//                         삭제
+//                         </button>
+//                     </td>
+//                     </tr>
+//                 ))}
+//                 </tbody>
+//             </table>
+//             </div>
+//             <div className="w-full mt-8">
+//             <h2 className="text-lg font-semibold">수입 목록</h2>
+//             <form className="mb-4 flex items-center space-x-2">
+//                 <input type="text" placeholder="금액" id="amountIncome" className="border p-2 rounded" />
+//                 <input type="text" placeholder="카테고리" id="categoryIncome" className="border p-2 rounded" />
+//                 <input type="text" placeholder="메모" id="memoIncome" className="border p-2 rounded" />
+//                 <button onClick={() => addTransaction('income')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+//                 추가
+//                 </button>
+//             </form>
+//             <table className="w-full">
+//                 <thead>
+//                 <tr>
+//                     <th>시간</th>
+//                     <th>금액</th>
+//                     <th>카테고리</th>
+//                     <th>메모</th>
+//                     <th>조치</th>
+//                 </tr>
+//                 </thead>
+//                 <tbody id="incomeList" className="overflow-y-auto h-48">
+//                 {incomes.map((income, index) => (
+//                     <tr key={index}>
+//                     <td>{income.time}</td>
+//                     <td>{income.amount}원</td>
+//                     <td>{income.category}</td>
+//                     <td>{income.memo}</td>
+//                     <td>
+//                         <button onClick={() => handleDelete('income', income.id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
+//                         삭제
+//                         </button>
+//                     </td>
+//                     </tr>
+//                 ))}
+//                 </tbody>
+//             </table>
+//             </div>
+//             <div id="chartContainer" className={styles.chartContainer}>
+//                 <canvas id="myChart"></canvas>
+//             </div>
+//         </div>
+//     </div>
+
+

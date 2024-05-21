@@ -1,15 +1,8 @@
 "use client"
-import Head from "next/head";
-// import { useRouter } from "next/router";
 import React, { useState, useEffect, useRef } from "react";
 import styles from "../styles/aichat.module.css";
-import OpenAI from "openai";
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-const openai = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
 
 export default function aiChat() {
   const router = useRouter();
@@ -26,16 +19,20 @@ export default function aiChat() {
   const sendMessage = async (message) => {
     setChatHistory((prev) => [...prev, { role: "user", content: message }]);
     try {
-      const completion = await openai.chat.completions.create({
-        messages: chatHistory.concat([{ role: "user", content: message }]),
-        model: "gpt-3.5-turbo",
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messages: chatHistory.concat([{ role: "user", content: message }]) }),
       });
+      const data = await response.json();
       setChatHistory((prevChatHistory) => [
         ...prevChatHistory,
-        { role: "assistant", content: completion.choices[0].message.content },
+        { role: "assistant", content: data.choices[0].message.content },
       ]);
     } catch (error) {
-      console.error("OpenAI API 호출 중 오류 발생:", error);
+      console.error("API 호출 중 오류 발생:", error);
     }
   };
 
@@ -79,45 +76,44 @@ export default function aiChat() {
   };
 
   return (
-    <div>
-      <Head>
-        <title>To-Don List AI 챗</title>
-      </Head>
-      <h1 className={styles.heading1}>To-Don List AI 챗</h1>
-      <div className={styles.chatContainer} ref={chatContainerRef}>
-        {chatHistory && chatHistory.map((msg, index) => (
-          <div key={index} className={msg.role === "user" ? styles.userMessage : styles.assistantMessage}>
+    <main className="flex min-h-screen flex-col items-center bg-custom-green-light space-y-8 p-8">
+      <h1 className="text-4xl font-bold text-black mb-6">AI 챗</h1>
+      <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6">
+        <div className={styles.chatContainer} ref={chatContainerRef}>
+          {chatHistory && chatHistory.map((msg, index) => (
+            <div key={index} className={msg.role === "user" ? styles.userMessage : styles.assistantMessage}>
             {msg.content}
           </div>
-        ))}
-      </div>
-      <div className={styles.messageInputContainer}>
-        <form onSubmit={onSubmit}>
-          <div className={styles.inputGroup}>
+          ))}
+        </div>
+        <form onSubmit={onSubmit} className="mt-4 justify-between">
+          <div className="flex items-center rounded-md border border-custom-green">
             <input
-              className={styles.textInput}
+              className="flex-grow p-3  rounded-md focus:outline-none"
               placeholder="메시지를 입력해주세요"
               required
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
-            <button className={styles.sendButton} type="submit">
-              보내기
-            </button>
-          </div>
-          <div className={styles.buttonGroup}>
-            <button className={styles.button} type="button" onClick={clearChat}>
-              초기화
-            </button>
-            <button className={styles.button} type="button" onClick={saveChat}>
-              채팅 저장
-            </button>
-            <button className={styles.button} type="button" onClick={fetchChatHistory}>
-              채팅 기록
+            <button
+              className="ml-2 mt-auto flex flex-col justify-between bg-custom-green text-white px-2 py-1 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+              type="submit">
+              ▶️
             </button>
           </div>
         </form>
+        <div className="flex justify-between mt-4">
+          <button onClick={clearChat} className="bg-custom-green hover:bg-custom-green-dark text-white font-bold py-2 px-4 rounded">
+            초기화
+          </button>
+          <button onClick={saveChat} className="bg-custom-green hover:bg-custom-green-dark text-white font-bold py-2 px-4 rounded">
+            채팅 저장
+          </button>
+          <button onClick={fetchChatHistory} className="bg-custom-green hover:bg-custom-green-dark text-white font-bold py-2 px-4 rounded">
+            채팅 내역
+          </button>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

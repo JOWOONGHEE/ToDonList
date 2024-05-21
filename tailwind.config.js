@@ -9,6 +9,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        'custom-green': '#4FD4D6',
+        'custom-green-light': '#D1EFEF'
+      },
       fontFamily:{
         'kakao':['kakao_regula']
       },

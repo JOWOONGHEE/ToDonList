@@ -1,6 +1,7 @@
 "use client"
 import React, { useState } from 'react';
 import { signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -11,6 +12,7 @@ import styles from '../styles/main.module.css'; // CSS 모듈 임포트
 
 const Main = () => {
   const [events, setEvents] = useState([]);
+  const router = useRouter();
 
   const handleEventClick = (clickInfo) => {
     console.log('clickInfo:', clickInfo);
@@ -80,6 +82,12 @@ const Main = () => {
     <div className={styles.container}>
       <button onClick={() => signOut({ callbackUrl: '/login' })}>
         로그아웃
+      </button>
+      <button onClick={() => router.push('/aichat')}>
+        AI챗
+      </button>
+      <button onClick={() => router.push('/accountbook')}>
+        가계부
       </button>
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
