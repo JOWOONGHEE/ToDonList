@@ -16,6 +16,7 @@ const Signup = () => {
       baseURL: 'http://localhost:5000/api'
     });
     
+    
     async function handleSubmit(event) {
         event.preventDefault();
 

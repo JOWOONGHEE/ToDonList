@@ -1,6 +1,6 @@
-import { MongoClient } from "mongodb";
+const { MongoClient } = require('mongodb');
 
-export default async function handler(req, res) {
+const handler = async (req, res) => {
   if (req.method === 'POST') {
     try {
       if (!req.body.chatData) {
@@ -28,3 +28,6 @@ export default async function handler(req, res) {
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
+
+module.exports = handler;
+

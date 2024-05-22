@@ -1,4 +1,4 @@
-import { MongoClient } from "mongodb";
+const { MongoClient } = require('mongodb');
 
 async function connectToDatabase(uri) {
   const client = new MongoClient(uri, {
@@ -9,7 +9,7 @@ async function connectToDatabase(uri) {
   return client;
 }
 
-export default async function handler(req, res) {
+const handler = async (req, res) => {
   if (req.method === 'GET') {
     try {
       const client = await connectToDatabase(process.env.MONGODB_URI);
@@ -28,3 +28,6 @@ export default async function handler(req, res) {
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
+
+module.exports = handler;
+

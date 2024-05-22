@@ -2,7 +2,7 @@
 import React, { useRef, useEffect } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { redirect, useRouter } from 'next/navigation';
-
+import axios from 'axios';
 
 const Login = () => {
     
@@ -10,13 +10,21 @@ const Login = () => {
     const passwordRef = useRef(null);
     const { data: sessionData, status: sessionStatus } = useSession();
     const router = useRouter();
+    const api = axios.create({
+        baseURL: 'http://localhost:5000/api'
+      });
+      
 
     console.log("세션 데이터:", sessionData);
     console.log("인증 상태:", sessionStatus);
 
     const handleSignIn = async (provider) => {
         console.log('로그인 시도:', provider);
-        const res = await signIn(provider, { callbackUrl: '/main' });
+        const res = await signIn(provider, { 
+            redirect: false,
+            email: emailRef.current.value,
+            password: passwordRef.current.value
+        });
         console.log('로그인 응답:', res);
         if (res?.ok) {
             router.push('/main');
@@ -45,7 +53,7 @@ const Login = () => {
               alert('로그인 실패: ' + result.error);
             } else {
               console.log('로그인 성공');
-              router.push('/main'); // 성공 시 대시보드로 리디렉션
+              router.push('/main'); // 성공 시 메인으로 리디렉션
             }
           } catch (error) {
             console.error('로그인 처리 중 오류 발생:', error);

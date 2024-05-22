@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+// import React, { useState, useEffect } from 'react';
+const React = require('react');
+const { useState, useEffect } = React;
 
 const ChatHistory = () => {
   const [chatHistory, setChatHistory] = useState([]);
@@ -29,4 +31,5 @@ const ChatHistory = () => {
   );
 };
 
-export default ChatHistory;
+module.exports = ChatHistory;
+

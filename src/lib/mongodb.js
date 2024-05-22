@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+const { MongoClient } = require('mongodb');
 
 const uri = process.env.MONGODB_URI; // 환경 변수에서 MongoDB URI를 가져옵니다.
 const options = {
@@ -26,4 +26,6 @@ if (process.env.NODE_ENV === 'development') {
   connectDB = client.connect();
 }
 
-export default connectDB;
+module.exports = connectDB;
+
+
