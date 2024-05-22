@@ -75,7 +75,7 @@ const Signup = () => {
                     />
                 </div>
                 <div className='mt-6'>
-                    <button type="submit" className='w-full rounded-md bg-custom-green px-4 py-2 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-custom-green focus:ring-opacity-50'>
+                    <button type="submit" className='w-full rounded-md bg-custom-green px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-custom-green focus:ring-opacity-50'>
                         회원가입
                     </button>
                 </div>

@@ -38,13 +38,17 @@ export default function accountBook() {
             <td><button class="delete-btn" data-type="${type}" data-id="${transactionId}">삭제</button></td>
         `;
         document.getElementById('expenseList').appendChild(newRow);
-        setExpenses(prevExpenses => [...prevExpenses, {
-            time: time,
-            amount: amountInput,
-            category: categoryInput,
-            memo: memoInput,
-            id: transactionId
-        }]);
+        setExpenses(prevExpenses => {
+            const newExpenses = [...prevExpenses, {
+                time: time,
+                amount: amountInput,
+                category: categoryInput,
+                memo: memoInput,
+                id: transactionId
+            }];
+            updateSummary(newExpenses, incomes); // 요약 정보 업데이트
+            return newExpenses;
+        });
     } else if (type === 'income') {
         const newRow = document.createElement('tr');
         const transactionId = time.getTime();
@@ -57,13 +61,17 @@ export default function accountBook() {
             <td><button class="delete-btn" data-type="${type}" data-id="${transactionId}">삭제</button></td>
         `;
         document.getElementById('incomeList').appendChild(newRow);
-        setIncomes(prevIncomes => [...prevIncomes, {
-            time: time,
-            amount: amountInput,
-            category: categoryInput,
-            memo: memoInput,
-            id: transactionId
-        }]);
+        setIncomes(prevIncomes => {
+            const newIncomes = [...prevIncomes, {
+                time: time,
+                amount: amountInput,
+                category: categoryInput,
+                memo: memoInput,
+                id: transactionId
+            }];
+            updateSummary(expenses, newIncomes); // 요약 정보 업데이트
+            return newIncomes;
+        });
     }
 
     document.getElementById(`memo${type.charAt(0).toUpperCase() + type.slice(1)}`).value = '';
@@ -98,10 +106,19 @@ export default function accountBook() {
     row.parentNode.removeChild(row);
 
     if (type === 'expense') {
-        setExpenses(prevExpenses => prevExpenses.filter(expense => expense.id !== transactionId));
+        setExpenses(prevExpenses => {
+            const updatedExpenses = prevExpenses.filter(expense => expense.id !== transactionId);
+            updateSummary(updatedExpenses, incomes); // 요약 정보 업데이트
+            return updatedExpenses;
+        });
     } else if (type === 'income') {
-        setIncomes(prevIncomes => prevIncomes.filter(income => income.id !== transactionId));
+        setIncomes(prevIncomes => {
+            const updatedIncomes = prevIncomes.filter(income => income.id !== transactionId);
+            updateSummary(expenses, updatedIncomes); // 요약 정보 업데이트
+            return updatedIncomes;
+        });
     }
+
 
     filterTransactions(type);
     updateChart();
@@ -157,9 +174,9 @@ export default function accountBook() {
     updateChart();
   };
 
-  const updateSummary = () => {
-    const totalExpense = expenses.reduce((acc, cur) => acc + parseFloat(cur.amount.replace(/\D/g, '')), 0);
-    const totalIncome = incomes.reduce((acc, cur) => acc + parseFloat(cur.amount.replace(/\D/g, '')), 0);
+  const updateSummary = (expenses = [], incomes = []) => {
+    const totalExpense = expenses.length > 0 ? expenses.reduce((acc, cur) => acc + parseFloat(cur.amount.replace(/\D/g, '')), 0) : 0;
+    const totalIncome = incomes.length > 0 ? incomes.reduce((acc, cur) => acc + parseFloat(cur.amount.replace(/\D/g, '')), 0) : 0;
 
     document.getElementById('totalExpense').textContent = formatAmount(totalExpense) + "원";
     document.getElementById('totalIncome').textContent = formatAmount(totalIncome) + "원";
@@ -207,15 +224,21 @@ export default function accountBook() {
   };
 
   return (  
-    <div className="min-h-screen bg-green-100 flex flex-col items-center p-8">
+    <div className="min-h-screen bg-custom-green-light flex flex-col items-center p-8">
         <div className="text-4xl font-bold text-black mb-6">가계부</div>
         <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-6 flex flex-col">
-        <div className={styles.summary}>
-            <h3>지출</h3>
+        <div className="flex justify-end w-full">
+        <div className="flex flex-col border border-custom-green p-2">
+            <div className="flex justify-between mb-2">
+            <h3 className="mr-2">지출</h3>
             <p id="totalExpense">0원</p>
-            <h3>수입</h3>
+            </div>
+            <div className="flex justify-between">
+            <h3 className="mr-2">수입</h3>
             <p id="totalIncome">0원</p>
-          </div>
+            </div>
+        </div>
+        </div>
           <div className="w-full">
             <h2 className="text-lg font-semibold">지출 목록</h2>
             <div className="mb-4 flex items-center space-x-2">
@@ -234,7 +257,17 @@ export default function accountBook() {
                 <select id="categoryExpense" name="categoryExpense">
                     <option value="식비">식비</option>
                     <option value="교통비">교통비</option>
-                    {/* 나머지 옵션들 */}
+                    <option value="생필품">생필품</option>
+                    <option value="의류">의류</option>
+                    <option value="교육">교육</option>
+                    <option value="의료 / 건강">의료 / 건강</option>
+                    <option value="문화생활">문화생활</option>
+                    <option value="미용">미용</option>
+                    <option value="저축">저축</option>
+                    <option value="공과금">공과금</option>
+                    <option value="경조사">경조사</option>
+                    <option value="기타">기타</option>
+
                 </select>
                 <label htmlFor="memoExpense">메모:</label>
                 <input type="text" id="memoExpense" name="memoExpense" />
@@ -276,6 +309,7 @@ export default function accountBook() {
                 <select id="categoryIncome" name="categoryIncome">
                     <option value="월급">월급</option>
                     <option value="부수입">부수입</option>
+                    
                     {/* 나머지 옵션들 */}
                 </select>
                 <label htmlFor="memoIncome">메모:</label>

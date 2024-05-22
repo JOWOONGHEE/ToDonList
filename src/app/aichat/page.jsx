@@ -2,13 +2,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "../styles/aichat.module.css";
 import { useRouter } from 'next/navigation';
-
+import axios from 'axios';
 
 export default function aiChat() {
   const router = useRouter();
   const [message, setMessage] = useState("");
-  const [chatHistory, setChatHistory] = useState([]);
+  const [chatHistory, setChatHistory] = useState([
+    { role: "system", content: "안녕하세요. 무엇을 도와드릴까요?" },
+  ]);
   const chatContainerRef = useRef(null);
+
+  
+
+  // const api = axios.create({
+  //   baseURL: 'http://localhost:5000/api'
+  // });
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -17,54 +25,79 @@ export default function aiChat() {
   }, [chatHistory]);
 
   const sendMessage = async (message) => {
-    setChatHistory((prev) => [...prev, { role: "user", content: message }]);
+    setChatHistory(prev => [...prev, { role: "user", content: message }]);
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await axios({
+        method: 'post',
+        url: 'http://localhost:5000/api/generate?endpoint=chat',
+        data: {
+          message: message
         },
-        body: JSON.stringify({ messages: chatHistory.concat([{ role: "user", content: message }]) }),
+        withCredentials: true, // 쿠키/인증 토큰 포함
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-      const data = await response.json();
-      setChatHistory((prevChatHistory) => [
-        ...prevChatHistory,
-        { role: "assistant", content: data.choices[0].message.content },
-      ]);
+      console.log('서버 응답:', response.data);
+      const data = response.data;
+      if (data.success) {
+        // Open a connection to receive streamed responses
+        const eventSource = new EventSource("http://localhost:5000/api/generate?endpoint=stream");
+        eventSource.onmessage = function (event) {
+          // Parse the event data, which is a JSON string
+          const parsedData = JSON.parse(event.data);
+          console.log("AI 응답:", parsedData.message);
+          // Check if the last message in the chat history is from the assistant
+          setChatHistory((prevChatHistory) => {
+            const newChatHistory = [...prevChatHistory];
+            if (
+              newChatHistory.length > 0 &&
+              newChatHistory[newChatHistory.length - 1].role === "assistant"
+            ) {
+              // If so, append the new chunk to the existing assistant message content
+              newChatHistory[newChatHistory.length - 1].content += parsedData;
+            } else {
+              // Otherwise, add a new assistant message to the chat history
+              newChatHistory.push({ role: "assistant", content: parsedData });
+            }
+            return newChatHistory;
+          });
+        };
+        eventSource.onerror = function () {
+          eventSource.close();
+        };
+        return () => {
+          eventSource.close(); // 컴포넌트 언마운트 시 연결 종료
+        };
+      }
     } catch (error) {
       console.error("API 호출 중 오류 발생:", error);
+      alert("메시지 전송에 실패했습니다.");
     }
   };
 
   const clearChat = () => {
-    setChatHistory([]);
+    setChatHistory([{ role: "system", content: "안녕하세요. 무엇을 도와드릴까요?" }]);
   };
 
-  // 채팅 저장
   const saveChat = async () => {
-    await fetch('/api/saveChat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ chatData: chatHistory }),
-    });
+    try {
+      await api.post('/saveChat', { chatData: chatHistory });
+      alert("채팅이 저장되었습니다.");
+    } catch (error) {
+      console.error("채팅 저장 중 오류 발생:", error);
+      alert("채팅 저장에 실패했습니다.");
+    }
   };
-  //저장된 채팅내역 가져오기
+
   const fetchChatHistory = async () => {
     try {
-      const response = await fetch('/api/getChats');
-      if (response.ok) {
-        const data = await response.json();
-        setChatHistory(data); // 데이터 구조에 따라 조정 필요
-        router.push('/api/chatHistory'); // 사용자에게 보여줄 페이지로 이동
-      } else {
-        console.error("채팅 기록을 가져오는데 실패했습니다.");
-        alert("채팅 기록을 가져오는데 실패했습니다."); // 사용자에게 에러 알림
-      }
+      const response = await api.get('/getChats');
+      setChatHistory(response.data);
+      router.push('/chatHistory');
     } catch (error) {
-      console.error("네트워크 에러:", error);
-      alert("네트워크 에러가 발생했습니다."); // 사용자에게 에러 알림
+      console.error("채팅 기록을 가져오는데 실패했습니다:", error);
+      alert("채팅 기록을 가져오는데 실패했습니다.");
     }
   };
 

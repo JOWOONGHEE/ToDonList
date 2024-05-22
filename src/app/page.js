@@ -4,6 +4,8 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Signup from './signup/page.jsx'; // Signup 컴포넌트 경로를 맞춰주세요
 import Login from './login/page.jsx'; // Login 컴포넌트 경로를 맞춰주세요
+import AiChat from './aichat/page.jsx';
+import AccountBook from './accountbook/page.jsx';
 import './globals.css';
 
 function Home() {
@@ -14,6 +16,8 @@ function Home() {
           <Route path="/" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/aichat" element={<AiChat />} />
+          <Route path="/accountbook" element={<AccountBook />} />
         </Routes>
       </Router>
     // </SessionProvider>
