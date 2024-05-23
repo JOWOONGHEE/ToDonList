@@ -1,3 +1,13 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: #fff;
+}
+
+
 .calendar {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -88,9 +98,6 @@
     padding: 30px;
   }
   
-.addButton {
-  margin-top: 10px;
-}
   
   /* body 스타일 */
 /* html, body {
@@ -112,4 +119,90 @@
   padding: 10px;
   margin: 5px 0;
   border-radius: 5px;
-  }
+}
+
+/* 플러스 버튼들*/
+.buttonContainer{
+    position: absolute;
+    bottom: 15px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end; /* 아래쪽에 정렬 */
+    height: 15vh; /* 전체 높이 */
+    padding: 20px;
+    z-index: 1001;
+}
+
+.calendarContainer {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 40px);
+}
+  
+.addButton {
+  background-color: #4FD4D6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 50px; /* 버튼 크기 */
+  height: 50px; /* 버튼 크기 */
+  transition: all 0.3s ease;
+  bottom: 20px; /* 아래쪽에서 20px */
+  right: 2px; /* 오른쪽에서 20px */
+  z-index: 1001;
+  opacity: 1 !important;
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: absolute;
+  bottom: 90px; /* + 버튼 위에 위치 */
+  right: 20px; /* 오른쪽에서 20px */
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  transform: translateY(20px); /* 초기 위치를 아래로 조금 내려서 시작 */
+  z-index: 1000;
+}
+
+.buttonGroup.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-10px); /* 버튼이 보여질 때 원래 위치로 이동 */
+}
+/* 'custom-green': '#4FD4D6',
+'custom-green-light': '#D1EFEF' */
+.buttonGroup button {
+  background-color: #4FD4D6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 50%; /* 둥근 모서리 */
+  width: 50px; /* 버튼 크기 */
+  height: 50px; /* 버튼 크기 */
+  transition: all 0.3s ease;
+}
+/* 버튼 색상 변경 */
+.brightButton {
+  background-color: #4FD4D6;
+  color: black;
+  opacity: 1 !important;
+  z-index: 1001;
+}
+

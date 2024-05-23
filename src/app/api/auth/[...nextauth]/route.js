@@ -55,13 +55,23 @@ export const authOptions =({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async signIn({ email, password }) {
-      const user = await db.collection('user_cred').findOne({ email });
-        if (!user) {
+    async signIn({ user, account, profile, email, credentials, password }) {
+      // SNS 로그인 처리
+      if (account && account.provider) {
+        // SNS 제공자에 따른 추가적인 검증이 필요하다면 여기에 로직 추가
+        return true;  // SNS 로그인은 기본적으로 성공으로 간주
+      }
+    
+      // 이메일과 비밀번호를 사용한 로그인 처리
+      if (email && password) {
+        console.log(db.databaseName);
+        const userDB = await db.collection('user_cred').findOne({ email });
+        if (!userDB) {
           return false;  // 사용자가 없으면 로그인 거부
         }
-        const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        const isPasswordCorrect = await bcrypt.compare(password, userDB.password);
         return isPasswordCorrect;  // 비밀번호가 맞으면 true, 틀리면 false 반환
+      }
     },
     async jwt(token, user) {
       if (user) {
