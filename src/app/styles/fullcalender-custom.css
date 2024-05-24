@@ -1,3 +1,29 @@
+/* 모바일 화면에서의 헤더 툴바 스타일 */
+@media (max-width: 600px) {
+  
+  /* 헤더 툴바 커스텀 버튼 정렬 */
+  .fc-toolbar-chunk {
+    font-size: 0.7rem;
+    margin-right: 0px;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+  }
+
+  .fc-direction-ltr .fc-toolbar > * > :not(:first-child) {
+    margin-left: 0 !important; /* 마진 제거 */
+  }
+  .fc-toolbar-chunk:last-child .fc-button{
+    white-space: nowrap;
+  }
+  /* 타이틀과 버튼 사이의 마진 및 넓이 조정 */
+  .fc-toolbar-title {
+    font-size: 1.5rem; /* 타이틀 글씨 크기 조정 */
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+    text-align: center; /* 타이틀 중앙 정렬 */
+  }
+}
+
 /* 헤더 스타일 */
 .fc-toolbar.fc-header-toolbar {
   display: flex;
@@ -60,7 +86,7 @@
 }
 
 .fc .fc-daygrid-day.fc-day-past .fc-daygrid-day-number {
-  background-color: #b2ebf2;
+  /* background-color: #b2ebf2; */
 }
 
 .fc .fc-daygrid-day.fc-day-future .fc-daygrid-day-number {
@@ -86,11 +112,24 @@
   background-color: #fff; /* 원하는 배경색으로 변경 */
 }
 /* 기본 prev, next 버튼 스타일 */
-.fc .fc-prev-button, .fc .fc-next-button {
+.fc .fc-prev-button  {
   background-color: transparent;
   border: none;
   color: #4FD4D6;
   font-size: 2rem;
+  padding: 0.01px;
+  cursor: pointer;
+}
+/* title 옆 마진 제거 */
+.fc-direction-ltr .fc-toolbar > * > :not(:first-child) {
+  margin-left: 1em; /* 마진 제거 */
+}
+.fc .fc-next-button{
+  background-color: transparent;
+  border: none;
+  color: #4FD4D6;
+  font-size: 2rem;
+  padding: 0.01px;
   cursor: pointer;
 }
 
@@ -124,7 +163,7 @@
 }
 
 .fc-toolbar-chunk:first-child {
-  flex: 1;
+  flex: 0.1;
 }
 
 .fc-toolbar-chunk:first-child .fc-button {
@@ -139,9 +178,13 @@
   flex: 2;
 }
 
+.fc-toolbar-chunk:nth-child(2) .fc-prev-button, .fc-toolbar-title, .fc-next-button {
+  margin-left: 0; /* 모든 요소의 margin-left 제거 */
+}
+
 .fc-toolbar-chunk:last-child {
   background-color: #fff;
-  flex: 1;
+  flex: 0.3;
   display: flex;
   justify-content: flex-end;
 }

@@ -18,21 +18,38 @@ const Main = () => {
   const router = useRouter();
   const [showButtons, setShowButtons] = useState(false); // 추가된 상태
   const [isBackgroundDimmed, setIsBackgroundDimmed] = useState(false); // 배경색 변경 상태 추가
+  const [orderCounter, setOrderCounter] = useState(0); // 이벤트 순서를 추적할 카운터
 
   const calendarRef = useRef(null);
 
-  const handlePrevClick = () => {
-    if (calendarRef.current) {
-      let calendarApi = calendarRef.current.getApi();
-      calendarApi.prev();
+  //달력에 직접 추가한 일정 수정 및 삭제
+  const handleEventClick = (info) => {  
+    if (!info || !info.event) {
+      console.error('Event data is missing or not a proper event object.');
+      return;
     }
-  };
+    Swal.fire({
+      title: info.event.title || info.event.extendedProps.schedule,
+      html: `<input type="text" id="title" class="swal2-input" value="${info.event.title}">
+             <input type="text" id="schedule" class="swal2-input" value="${info.event.extendedProps.schedule || ''}">`,
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: '수정',
+      denyButtonText: '삭제',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const newTitle = Swal.getPopup().querySelector('#title').value;
+        const newSchedule = Swal.getPopup().querySelector('#schedule').value;
 
-  const handleNextClick = () => {
-    if (calendarRef.current) {
-      let calendarApi = calendarRef.current.getApi();
-      calendarApi.next();
-    }
+        setEvents(events.map(event => 
+          event.id === info.event.id
+            ? { ...event, title: newTitle, extendedProps: { schedule: newSchedule, orderIndex: event.extendedProps.orderIndex } }
+            : event
+        ));
+      } else if (result.isDenied) {
+        setEvents(events.filter(event => event.id !== info.event.id));
+      }
+    });
   };
 
   const toggleButtons = () => {
@@ -40,11 +57,11 @@ const Main = () => {
     setIsBackgroundDimmed(!isBackgroundDimmed); // 배경색 변경 상태 토글
   };
 
-  const handleFirstPlusClick = () => {
-    Swal.fire({
+  const plusSchedule = async () => {
+    const { value: formValues } = await Swal.fire({
       title: '출발 날짜와 도착 날짜 선택',
       html: '<input id="startDate" class="swal2-input" type="date">' +
-            '<input id="endDate" class="swal2-input" type="date">',
+        '<input id="endDate" class="swal2-input" type="date">',
       focusConfirm: false,
       confirmButtonText: '추가',
       showCancelButton: true,
@@ -55,68 +72,198 @@ const Main = () => {
           document.getElementById('endDate').value
         ];
       }
-    }).then((formValues) => {
-      if (formValues.value) {
-        const [startDate, endDate] = formValues.value;
-        console.log('Selected Dates:', startDate, endDate);
-        // 여기에 추가 로직을 구현할 수 있습니다.
-      }
     });
-  };
-  const handleEventClick = (clickInfo) => {
-    console.log('clickInfo:', clickInfo);
-    if (!clickInfo || !clickInfo.event) {
-      console.error('Event data is missing or not a proper event object.');
-      return;
-    }
-    console.log('Event clicked:', clickInfo.event.title)
-    Swal.fire({
-      title: clickInfo.event.title || clickInfo.event.extendedProps.schedule,
-      html: `<input type="text" id="title" class="swal2-input" value="${clickInfo.event.title}">
-             <input type="text" id="schedule" class="swal2-input" value="${clickInfo.event.extendedProps.schedule || ''}">`,
-      showDenyButton: true,
-      showCancelButton: true,
-      confirmButtonText: '수정',
-      denyButtonText: '삭제',
-    }).then((result) => {
+
+    if (formValues) {
+      let [startDate, endDate] = formValues;
+
+      if (!startDate && !endDate) {
+        startDate = endDate = new Date().toISOString().split("T")[0];
+      }
+
+      if (!startDate) {
+        startDate = endDate;
+      }
+
+      if (!endDate) {
+        endDate = startDate;
+      }
+
+      const nextDay = new Date(endDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      endDate = nextDay.toISOString().split("T")[0];
+
+      if (startDate > endDate) {
+        [startDate, endDate] = [endDate, startDate];
+      }
+
+      const result = await Swal.fire({
+        title: '일정 정보 입력',
+        html: `<input type="text" id="title" class="swal2-input" placeholder="일정 제목">
+               <input type="text" id="schedule" class="swal2-input" placeholder="일정">`,
+        confirmButtonText: '추가',
+        showCancelButton: true,
+        cancelButtonText: '취소',
+        preConfirm: () => {
+          const title = Swal.getPopup().querySelector('#title').value;
+          const schedule = Swal.getPopup().querySelector('#schedule').value;
+          if (!title) {
+            return { title: schedule, schedule: schedule };
+          }
+          return { title: title, schedule: schedule };
+        }
+      });
+
       if (result.isConfirmed) {
-        clickInfo.event.setProp('title', Swal.getPopup().querySelector('#title').value);
-        clickInfo.event.setExtendedProp('schedule', Swal.getPopup().querySelector('#schedule').value);
-      } else if (result.isDenied) {
-        clickInfo.event.remove();
+        const newEvent = {
+          id: String(events.length + 1),
+          title: result.value.title,
+          start: new Date(startDate),
+          end: new Date(endDate),
+          allDay: true,
+          extendedProps: {
+            schedule: result.value.schedule,
+            orderIndex: orderCounter
+          }
+        };
+        setOrderCounter(orderCounter + 1); // 이벤트 순서 업데이트
+        setEvents([...events, newEvent]);
       }
-    });
+    }
   };
 
-  const handleDateSelect = (selectInfo) => {
-    console.log('Date selected:', selectInfo);
-    Swal.fire({
-      title: '새 일정 추가',
-      html: `<input type="text" id="title" class="swal2-input" placeholder="일정 제목">
-             <input type="text" id="schedule" class="swal2-input" placeholder="일정">`,
-      confirmButtonText: '추가',
-      showCancelButton: true,
-      cancelButtonText: '취소',
-      preConfirm: () => {
-        const title = Swal.getPopup().querySelector('#title').value;
-        const schedule = Swal.getPopup().querySelector('#schedule').value;
-        return { title: title, schedule: schedule };
+  
+
+  const handleDateSelect = async (selectInfo) => {
+    const selectedStart = new Date(selectInfo.startStr);
+    const selectedEnd = new Date(selectInfo.end);
+
+    const foundEvents = events.filter(event => {
+      const eventStart = new Date(event.start);
+      const eventEnd = new Date(event.end);
+
+      // 하루짜리 이벤트를 정확히 동일한 날짜 비교
+      if (eventStart.toISOString().split("T")[0] === eventEnd.toISOString().split("T")[0]) {
+        return eventStart.toISOString().split("T")[0] === selectedStart.toISOString().split("T")[0];
       }
-    }).then((result) => {
+
+      return (
+        (eventStart <= selectedEnd && eventEnd > selectedStart) ||
+        (eventStart >= selectedStart && eventStart < selectedEnd)
+      );
+    });
+
+    if (foundEvents.length > 0) {
+      const eventDetails = foundEvents.map((event, index) => {
+        let showEndDate = new Date(event.end);
+        showEndDate.setDate(showEndDate.getDate() - 1);
+        showEndDate = showEndDate.toISOString().split("T")[0];
+
+        return `<div class="clickable-event" data-event-index="${index}">
+                  일정명: ${event.title || event.extendedProps.schedule}, 시작: ${event.start.toISOString().split("T")[0]}, 종료: ${showEndDate}
+                </div>`;
+      }).join("<br>");
+
+      const result = await Swal.fire({
+        title: '찾은 일정',
+        html: `${eventDetails}
+               <input type="text" id="title" class="swal2-input" placeholder="일정 제목">
+               <input type="text" id="schedule" class="swal2-input" placeholder="일정">`,
+        confirmButtonText: '추가',
+        showCancelButton: true,
+        cancelButtonText: '취소',
+        preConfirm: () => {
+          const title = Swal.getPopup().querySelector('#title').value;
+          const schedule = Swal.getPopup().querySelector('#schedule').value;
+          if (!title) {
+            return { title: schedule, schedule: schedule };
+          }
+          return { title: title, schedule: schedule };
+        },
+        didOpen: () => {
+          Swal.getPopup().addEventListener('click', (e) => {
+            if (e.target.classList.contains('clickable-event')) {
+              const index = e.target.getAttribute('data-event-index');
+              const event = foundEvents[index];
+              Swal.fire({
+                title: event.title || event.extendedProps.schedule,
+                html: `<input type="text" id="title" class="swal2-input" value="${event.title}">
+                       <input type="text" id="schedule" class="swal2-input" value="${event.extendedProps.schedule}">`,
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: '수정',
+                denyButtonText: '삭제',
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  const newTitle = Swal.getPopup().querySelector('#title').value;
+                  const newSchedule = Swal.getPopup().querySelector('#schedule').value;
+                  setEvents(events.map(e => 
+                    e.id === event.id
+                      ? { ...e, title: newTitle, extendedProps: { schedule: newSchedule, orderIndex: e.extendedProps.orderIndex } }
+                      : e
+                  ));
+                } else if (result.isDenied) {
+                  setEvents(events.filter(e => e.id !== event.id));
+                }
+              });
+            }
+          });
+        }
+      });
+
       if (result.isConfirmed) {
         let calendarApi = selectInfo.view.calendar;
         calendarApi.unselect(); // clear date selection
-        calendarApi.addEvent({
+        const newEvent = {
+          id: String(events.length + 1),
           title: result.value.title,
-          start: selectInfo.startStr,
-          end: selectInfo.endStr,
+          start: new Date(selectInfo.startStr),
+          end: new Date(selectInfo.endStr),
           allDay: selectInfo.allDay,
           extendedProps: {
-            schedule: result.value.schedule
+            schedule: result.value.schedule,
+            orderIndex: orderCounter
           }
-        });
+        };
+        setOrderCounter(orderCounter + 1); // 이벤트 순서 업데이트
+        setEvents([...events, newEvent]);
       }
-    });
+    } else {
+      const result = await Swal.fire({
+        title: '일정이 없습니다',
+        html: `<input type="text" id="title" class="swal2-input" placeholder="일정 제목">
+               <input type="text" id="schedule" class="swal2-input" placeholder="일정">`,
+        confirmButtonText: '추가',
+        showCancelButton: true,
+        cancelButtonText: '취소',
+        preConfirm: () => {
+          const title = Swal.getPopup().querySelector('#title').value;
+          const schedule = Swal.getPopup().querySelector('#schedule').value;
+          if (!title) {
+            return { title: schedule, schedule: schedule };
+          }
+          return { title: title, schedule: schedule };
+        }
+      });
+
+      if (result.isConfirmed) {
+        let calendarApi = selectInfo.view.calendar;
+        calendarApi.unselect(); // clear date selection
+        const newEvent = {
+          id: String(events.length + 1),
+          title: result.value.title,
+          start: new Date(selectInfo.startStr),
+          end: new Date(selectInfo.endStr),
+          allDay: selectInfo.allDay,
+          extendedProps: {
+            schedule: result.value.schedule,
+            orderIndex: orderCounter
+          }
+        };
+        setOrderCounter(orderCounter + 1); // 이벤트 순서 업데이트
+        setEvents([...events, newEvent]);
+      }
+    }
   };
 
   // if (window.navigator.userAgent.includes('Emulation')) {
@@ -128,14 +275,15 @@ const Main = () => {
   // }
 
   return (
-    <div className={`flex flex-col items-center justify-center p-5 min-h-screen ${isBackgroundDimmed ? 'bg-gray-200' : 'bg-gray-100'}`}>
-      <button
-        className="bg-teal-500 text-white py-2 px-4 rounded-lg hover:bg-teal-600 transition"
-        onClick={() => signOut({ callbackUrl: '/login' })}
-      >
-        로그아웃
-      </button>
-      <div className="relative w-full max-w-4xl bg-white rounded-lg shadow-lg p-5">
+    
+      
+      <div className="relative w-full h-full max-w-6xl bg-white rounded-lg shadow-lg p-5">
+        <button
+          className="bg-teal-500 text-white py-2 px-4 rounded-lg hover:bg-teal-600 transition"
+          onClick={() => signOut({ callbackUrl: '/login' })}
+        >
+          로그아웃
+        </button>
         <div className={`${isBackgroundDimmed ? 'opacity-40' : 'opacity-100'} transition-opacity duration-300`}>
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
@@ -145,17 +293,6 @@ const Main = () => {
               center: 'prev title next',
               right: 'today'
             }}
-            customButtons={{
-              customPrev: {
-                text: '<',
-                click: handlePrevClick
-              },
-              customNext: {
-                text: '>',
-                click: handleNextClick
-              }
-            }}
-            
             buttonText={{
               today: '오늘',
               month: '월',
@@ -177,15 +314,13 @@ const Main = () => {
           )}
         />
         
-          
-        </div>
       </div>
       <div className={styles.buttonContainer}>
           <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={toggleButtons}>+</button>
             <div className={`${styles.buttonGroup} ${showButtons ? styles.show : ''}`}>
               <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => router.push('/aichat')}>AI</button>
               <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => router.push('/accountbook')}>가</button>
-              <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => handleFirstPlusClick()}>일</button>
+              <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => plusSchedule()}>일</button>
             </div>
           </div>
     </div>
