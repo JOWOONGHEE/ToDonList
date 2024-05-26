@@ -13,7 +13,7 @@ import Swal from 'sweetalert2';
 import styles from '../styles/main.module.css'; // CSS 모듈 임포트
 import '../styles/fullcalender-custom.css';
 
-const Main = () => {
+export default function Main() {
   const [events, setEvents] = useState([]);
   const router = useRouter();
   const [showButtons, setShowButtons] = useState(false); // 추가된 상태
@@ -326,8 +326,4 @@ const Main = () => {
     </div>
   );
 };
-
-
-export default Main;
-
 

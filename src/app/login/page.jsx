@@ -4,7 +4,7 @@ import { signIn, signOut, useSession } from 'next-auth/react';
 import { redirect, useRouter } from 'next/navigation';
 import axios from 'axios';
 
-const Login = () => {
+export default function Login() {
     
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
@@ -128,5 +128,3 @@ const Login = () => {
         </main>
     );
 };
-
-export default Login;

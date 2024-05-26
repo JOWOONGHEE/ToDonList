@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
-const SignUp = () => {
+export default function SignUp() {
     
     const router = useRouter();
     const [email, setEmail] = useState('');
@@ -84,5 +84,3 @@ const SignUp = () => {
         </main>
     );
 };
-
-export default SignUp;
