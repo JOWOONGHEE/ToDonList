@@ -20,26 +20,5 @@ function MyApp() {
   );
 }
 
-import './globals.css'
-import { useSession, SessionProvider } from 'next-auth/react';
-
-
-export default MyApp;
-
-// function MyApp({ Component, pageProps }) {
-  
-//   const { data: session, status } = useSession();
-
-//   return (
-//     <>
-//       <SessionProvider session={session}>
-//         <Login />
-//         <Component {...pageProps} />
-//       </SessionProvider>
-//     </>
-//   );
-// }
-
-// export default MyApp;
 
 
