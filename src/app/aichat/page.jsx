@@ -4,7 +4,7 @@ import styles from "../styles/aichat.module.css";
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
-export default function aiChat() {
+export default function AiChat() {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([

@@ -5,13 +5,13 @@ import styles from '../styles/accountbook.module.css';
 
 let myChart;
 
-export default function accountBook() {
+export default function AccountBook() {
   const [expenses, setExpenses] = useState([]);
   const [incomes, setIncomes] = useState([]);
 
   useEffect(() => {
     updateChart();
-  }, [expenses, incomes]);
+  }, [expenses, incomes, updateChart]);
 
   const addTransaction = (type) => {
     const amountInput = document.getElementById(`amount${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
@@ -92,7 +92,7 @@ export default function accountBook() {
             button.removeEventListener('click', handleDelete);
         });
     };
-}, [expenses, incomes]); // Dependencies array includes expenses and incomes to re-apply listeners when these change
+}, [expenses, incomes, handleDelete]); // Dependencies array includes expenses and incomes to re-apply listeners when these change
 
   const handleDelete = (event) => {
     const button = event.target;
@@ -339,108 +339,3 @@ export default function accountBook() {
       </div>
   );
  };
-//     <div className="min-h-screen bg-green-100 flex flex-col items-center p-8">
-//         <div className="text-4xl font-bold text-black mb-6">가계부</div>
-//         <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-6 flex flex-col">
-//             <div className={styles.summary}>
-//             <h3>지출</h3>
-//             <p id="totalExpense">0원</p>
-//             <h3>수입</h3>
-//             <p id="totalIncome">0원</p>
-//             </div>
-//             <div className="w-full">
-//             <h2 className="text-lg font-semibold">지출 목록</h2>
-//             <form className="mb-4 flex items-center space-x-2">
-//                 <label className="whitespace-nowrap" htmlFor="filterExpense">필터링 및 정렬:</label>
-//                 <select id="filterExpense" onChange={() => filterTransactions('expense')}>
-//                     <option value="time" className="border p-2 rounded">시간순</option>
-//                     <option value="money" className="border p-2 rounded">금액순</option>
-//                     <option value="category" className="border p-2 rounded">카테고리별</option>
-//                 </select>
-//                 <div id="transactionFormExpense">
-//                     <label htmlFor="amountExpense">금액:</label>
-//                     <input type="text" id="amountExpense" name="amountExpense" required onInput={() => onAmountChange('expense')} />
-//                     <label htmlFor="categoryExpense">카테고리:</label>
-//                     <select id="categoryExpense" name="categoryExpense">
-//                         <option value="식비">식비</option>
-//                         <option value="교통비">교통비</option>
-//                         {/* 나머지 옵션들 */}
-//                     </select>
-//                     <label htmlFor="memoExpense">메모:</label>
-//                     <input type="text" id="memoExpense" name="memoExpense" />
-//                     <button type="button" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-//                         onClick={() => addTransaction('expense')} >지출 추가</button>
-//                 </div>
-               
-//             </form>
-//             <table className="w-full">
-//                 <thead>
-//                 <tr>
-//                     <th>시간</th>
-//                     <th>금액</th>
-//                     <th>카테고리</th>
-//                     <th>메모</th>
-//                     <th>조치</th>
-//                 </tr>
-//                 </thead>
-//                 <tbody id="expenseList" className="overflow-y-auto h-48">
-//                 {expenses.map((expense, index) => (
-//                     <tr key={index}>
-//                     <td>{expense.time}</td>
-//                     <td>{expense.amount}원</td>
-//                     <td>{expense.category}</td>
-//                     <td>{expense.memo}</td>
-//                     <td>
-//                         <button onClick={() => handleDelete('expense', expense.id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
-//                         삭제
-//                         </button>
-//                     </td>
-//                     </tr>
-//                 ))}
-//                 </tbody>
-//             </table>
-//             </div>
-//             <div className="w-full mt-8">
-//             <h2 className="text-lg font-semibold">수입 목록</h2>
-//             <form className="mb-4 flex items-center space-x-2">
-//                 <input type="text" placeholder="금액" id="amountIncome" className="border p-2 rounded" />
-//                 <input type="text" placeholder="카테고리" id="categoryIncome" className="border p-2 rounded" />
-//                 <input type="text" placeholder="메모" id="memoIncome" className="border p-2 rounded" />
-//                 <button onClick={() => addTransaction('income')} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-//                 추가
-//                 </button>
-//             </form>
-//             <table className="w-full">
-//                 <thead>
-//                 <tr>
-//                     <th>시간</th>
-//                     <th>금액</th>
-//                     <th>카테고리</th>
-//                     <th>메모</th>
-//                     <th>조치</th>
-//                 </tr>
-//                 </thead>
-//                 <tbody id="incomeList" className="overflow-y-auto h-48">
-//                 {incomes.map((income, index) => (
-//                     <tr key={index}>
-//                     <td>{income.time}</td>
-//                     <td>{income.amount}원</td>
-//                     <td>{income.category}</td>
-//                     <td>{income.memo}</td>
-//                     <td>
-//                         <button onClick={() => handleDelete('income', income.id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">
-//                         삭제
-//                         </button>
-//                     </td>
-//                     </tr>
-//                 ))}
-//                 </tbody>
-//             </table>
-//             </div>
-//             <div id="chartContainer" className={styles.chartContainer}>
-//                 <canvas id="myChart"></canvas>
-//             </div>
-//         </div>
-//     </div>
-
-
