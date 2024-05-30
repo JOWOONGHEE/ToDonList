@@ -275,15 +275,14 @@ export default function Main() {
   // }
 
   return (
-    
-      
-      <div className="relative w-full h-full max-w-6xl bg-white rounded-lg shadow-lg p-5">
-        <button
-          className="bg-teal-500 text-white py-2 px-4 rounded-lg hover:bg-teal-600 transition"
-          onClick={() => signOut({ callbackUrl: '/login' })}
-        >
-          로그아웃
-        </button>
+    <div className="relative w-full h-screen max-w-6xl bg-white rounded-lg p-5 overflow-auto flex-col ">
+      {/* <button
+        className="bg-teal-500 text-white py-2 px-4 rounded-lg hover:bg-teal-600 transition"
+        onClick={() => signOut({ callbackUrl: '/login' })}
+      >
+        로그아웃
+      </button> */}
+      <div className={styles.calendarContainer}>
         <div className={`${isBackgroundDimmed ? 'opacity-40' : 'opacity-100'} transition-opacity duration-300`}>
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
@@ -311,19 +310,49 @@ export default function Main() {
             dayCellContent={(e) => e.dayNumberText.replace('일', '')} // 날짜 형식에서 "일" 제거
             eventContent={(eventInfo) => (
             { html: `<div>${eventInfo.event.title || eventInfo.event.extendedProps.schedule}</div>` }
-          )}
-        />
+            )}
+            views={{
+              timeGridWeek: {
+                dayHeaderFormat: { weekday: 'short', day: 'numeric' } // 주간 뷰에서 요일과 날짜 형식 지정
+              }
+            }}
+            dayCellClassNames={(arg) => {
+              if (arg.date.getDay() === 0) {
+                return 'fc-day-sun'; // 일요일
+              } else if (arg.date.getDay() === 6) {
+                return 'fc-day-sat'; // 토요일
+              }
+              return '';
+            }}
+          />
         
       </div>
+      </div>
       <div className={styles.buttonContainer}>
-          <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={toggleButtons}>+</button>
-            <div className={`${styles.buttonGroup} ${showButtons ? styles.show : ''}`}>
-              <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => router.push('/aichat')}>AI</button>
-              <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => router.push('/accountbook')}>가</button>
-              <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => plusSchedule()}>일</button>
-            </div>
+        <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={toggleButtons}>+</button>
+        <div className={`${styles.buttonGroup} ${showButtons ? styles.show : ''}`}>
+          <div className="buttonWrapper">
+            <span className={styles.buttonText}>AI 챗</span>
+            <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => router.push('/aichat')}>
+              <img src="/assets/aiLogo.png" alt="AI" className={styles.buttonIcon} />
+            </button>
           </div>
+          <div className="buttonWrapper">
+            <span className={styles.buttonText}>가계부</span>
+            <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => router.push('/accountbook')}>
+              <img src="/assets/accountbookLogo.png" alt="Account Book" className={styles.buttonIcon} />
+            </button>
+          </div>
+          <div className="buttonWrapper">
+            <span className={styles.buttonText}>일정</span>
+            <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => plusSchedule()}>
+              <img src="/assets/calenderLogo.png" alt="Schedule" className={styles.buttonIcon} />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+    
   );
 };
 

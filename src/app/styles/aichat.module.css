@@ -147,7 +147,7 @@
 .chatContainer {
   height: 60vh; /* 화면의 60%만큼 높이를 가짐 */
   overflow-y: auto; /* 수직 스크롤이 필요할 때만 스크롤이 표시됨 */
-  max-width: 80%;
+  max-width: 100%;
   width: 80vw;
   margin: 0 auto;
   padding-top: 20px;
@@ -157,6 +157,7 @@
   padding-bottom: 160px;
   margin-bottom: 20px;
   overflow: auto;
+  gap: 10px
 }
 
 .userMessage,

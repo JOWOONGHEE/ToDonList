@@ -7,10 +7,10 @@ const ChatHistory = () => {
 
   useEffect(() => {
     async function fetchChatHistory() {
-      const response = await fetch('/api/getChats');
+      const response = await fetch('/getChats');
       if (response.ok) {
         const data = await response.json();
-        setChatHistory(data.chats);
+        setChatHistory(data.chats[0].chatHistory);
       } else {
         console.error("채팅 기록을 가져오는데 실패했습니다.");
         alert("채팅 기록을 가져오는데 실패했습니다.");

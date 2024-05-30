@@ -11,18 +11,20 @@ async function connectToDatabase(uri) {
 
 const handler = async (req, res) => {
   if (req.method === 'GET') {
+    let client;
     try {
-      const client = await connectToDatabase(process.env.MONGODB_URI);
+      client = await connectToDatabase(process.env.MONGODB_URI);
       const db = client.db('Chat');
       const collection = db.collection("chats");
-
-      const chats = await collection.find().toArray();
-
-      client.close();
+      const chats = await collection.find({}).sort({ createdAt: -1 }).limit(1).toArray();
       res.status(200).json({ chats: chats });
     } catch (error) {
       console.error("Error retrieving chats:", error);
       res.status(500).json({ message: 'Failed to retrieve chats' });
+    } finally {
+      if (client) {
+        client.close();
+      }
     }
   } else {
     res.status(405).end(`Method ${req.method} Not Allowed`);

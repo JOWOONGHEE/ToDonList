@@ -19,11 +19,12 @@ export default function Login() {
     console.log("인증 상태:", sessionStatus);
 
     const handleSignIn = async (provider) => {
+        
         console.log('로그인 시도:', provider);
         const res = await signIn(provider, { 
             redirect: false,
-            email: emailRef.current.value,
-            password: passwordRef.current.value
+            email,
+            password
         });
         console.log('로그인 응답:', res);
         if (res?.ok) {
@@ -34,6 +35,14 @@ export default function Login() {
     };
 
     const handleSubmit = async (event) => {
+        if (!emailRef.current.value.match(/^[^@]+@[^@]+\.[^@]+$/)) {
+            alert("이메일 형식이 올바르지 않습니다.");
+            return;
+        }
+        if (passwordRef.current.value.length < 6) {
+            alert('비밀번호는 6자 이상이어야 합니다.');
+            return;
+        }
         event.preventDefault();
         console.log("로그인 시도");
         console.log(emailRef.current.value);
@@ -47,7 +56,7 @@ export default function Login() {
               email,
               password
             });
-        
+            console.log('로그인 결과:', result);
             if (result.error) {
               console.error('로그인 실패:', result.error);
               alert('로그인 실패: ' + result.error);

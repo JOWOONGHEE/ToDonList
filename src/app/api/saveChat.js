@@ -1,17 +1,22 @@
 const { MongoClient } = require('mongodb');
+const Chat = require('../models/Chat');
 
 const handler = async (req, res) => {
   if (req.method === 'POST') {
     try {
-      if (!req.body.chatData) {
-        throw new Error("chatData is undefined");
+      const { chatHistory } = req.body;
+      if (!req.body.chatHistory) {
+        throw new Error("chatHistory is undefined");
       }
-    
+      const chat = new Chat({
+        chatHistory: req.body.chatHistory
+      });
       const client = await MongoClient.connect(process.env.MONGODB_URI);
-      const db = client.db('Chat');
+      const db = await client.db('Chat');
       const collection = db.collection("chats");
-    
-      await collection.insertMany(req.body.chatData);
+
+      const result = await collection.insertOne({ chatHistory, createdAt: new Date() });
+      console.log("Insert result:", result);
       console.log("채팅 저장 완료");
       client.close();
       res.status(200).json({ message: '채팅이 성공적으로 저장되었습니다.' });

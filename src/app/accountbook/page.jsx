@@ -5,13 +5,13 @@ import styles from '../styles/accountbook.module.css';
 
 let myChart;
 
-export default function AccountBook() {
+export default function accountBook() {
   const [expenses, setExpenses] = useState([]);
   const [incomes, setIncomes] = useState([]);
 
   useEffect(() => {
     updateChart();
-  }, [expenses, incomes, updateChart]);
+  }, [expenses, incomes]);
 
   const addTransaction = (type) => {
     const amountInput = document.getElementById(`amount${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
@@ -92,7 +92,7 @@ export default function AccountBook() {
             button.removeEventListener('click', handleDelete);
         });
     };
-}, [expenses, incomes, handleDelete]); // Dependencies array includes expenses and incomes to re-apply listeners when these change
+}, [expenses, incomes]); // Dependencies array includes expenses and incomes to re-apply listeners when these change
 
   const handleDelete = (event) => {
     const button = event.target;
@@ -339,3 +339,4 @@ export default function AccountBook() {
       </div>
   );
  };
+

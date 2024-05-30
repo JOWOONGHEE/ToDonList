@@ -1,5 +1,15 @@
 /* 모바일 화면에서의 헤더 툴바 스타일 */
 @media (max-width: 600px) {
+  .fc {
+    width: 100%;
+    height: calc(70vh - 200px);
+  }
+  
+  .fc-view {
+    height: 100%;
+  }
+  
+  
   
   /* 헤더 툴바 커스텀 버튼 정렬 */
   .fc-toolbar-chunk {
@@ -22,6 +32,11 @@
     white-space: nowrap; /* 텍스트 줄바꿈 방지 */
     text-align: center; /* 타이틀 중앙 정렬 */
   }
+}
+
+
+.fc-view {
+  height: 100%;
 }
 
 /* 헤더 스타일 */
@@ -224,14 +239,47 @@
 .fc .fc-daygrid-day-bg {
   border: none; /* 각 날짜 셀의 배경 테두리 제거 */
 }
+
 .fc-view-harness .fc-view-harness-active {
   border: none;
+  height: calc(100vh - 80px); /* 세로 크기 조정 */
 }
+
 .fc-today-button .fc-button .fc-button-primary {
   background-color: #fff;
   color: white;
 }
 
+/* 토요일 스타일 */
+.fc-day-sat {
+  background-color: #e0f7fa; /* 연한 파란색 배경 */
+  color: #00796b; /* 진한 파란색 텍스트 */
+}
+
+/* 일요일 스타일 */
+.fc-day-sun {
+  background-color: #ffebee; /* 연한 빨간색 배경 */
+  color: #d32f2f; /* 진한 빨간색 텍스트 */
+}
+
+/* 토요일 날짜 스타일 */
+.fc-day-sat .fc-daygrid-day-number {
+  color: #00796b; /* 진한 파란색 텍스트 */
+}
+
+/* 일요일 날짜 스타일 */
+.fc-day-sun .fc-daygrid-day-number {
+  color: #d32f2f; /* 진한 빨간색 텍스트 */
+}
 /* 'custom-green': '#4FD4D6',
 'custom-green-light': '#D1EFEF' */
 
+/* 주 달력 스타일 */
+
+.fc-timeGridWeek-view .fc-daygrid-day-number {
+  display: block;
+  text-align: center;
+  font-size: 1rem;
+  margin-top: 5px;
+  color: #333;
+}

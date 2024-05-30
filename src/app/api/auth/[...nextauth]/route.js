@@ -5,13 +5,14 @@ import KakaoProvider from "next-auth/providers/kakao"
 import NaverProvider from "next-auth/providers/naver";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 
-import connectDB from "../../../../lib/mongodb";
+import connectDB from "../../../../lib/mongodb.mjs";
 import bcrypt from 'bcrypt';
 const mongoose = require('mongoose');
 
 export const authOptions =({
   providers:[
     CredentialsProvider({
+      id: "credentials",
       name: "credentials",
       credentials: {
           email: { label: "Email", type: "email", placeholder: "Email" },
@@ -19,19 +20,26 @@ export const authOptions =({
       },
       
       async authorize(credentials){
-        const db = mongoose.connection.useDb('forum');
-        console.log(db.databaseName);
-        let user = await db.collection('user_cred').findOne({email : credentials.email})
-        if (!user) {
-          console.log('해당 이메일은 없음');
-          return null
+        console.log('Received credentials:', credentials);
+        try {
+          await connectDB();
+          const db = mongoose.connection.useDb('forum');
+          let user = await db.collection('user_cred').findOne({ email: credentials.email });
+          if (!user) {
+            console.log('No user found with that email');
+            return null;
+          }
+          const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password);
+          console.log('Password verification result:', isPasswordCorrect);
+          if (!isPasswordCorrect) {
+            console.log('Incorrect password');
+            return null;
+          }
+          return user;
+        } catch (error) {
+          console.error('Error in authorize function:', error);
+          return null;
         }
-        const pwcheck = await bcrypt.compare(credentials.password, user.password);
-        if (!pwcheck) {
-          console.log('비번틀림');
-          return null
-        }
-        return user
       }
   }),
   GoogleProvider({

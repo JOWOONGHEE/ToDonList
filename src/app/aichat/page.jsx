@@ -7,11 +7,12 @@ import axios from 'axios';
 export default function AiChat() {
   const router = useRouter();
   const [message, setMessage] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [chatHistory, setChatHistory] = useState([
     { role: "system", content: "안녕하세요. 무엇을 도와드릴까요?" },
   ]);
   const chatContainerRef = useRef(null);
-
+  
   
 
   const api = axios.create({
@@ -23,6 +24,11 @@ export default function AiChat() {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatHistory]);
+
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+    
+  };
 
   const sendMessage = async (message) => {
     setChatHistory(prev => [...prev, { role: "user", content: message }]);
@@ -76,28 +82,42 @@ export default function AiChat() {
     }
   };
 
-  const clearChat = () => {
+  const clearChat = async() => {
     setChatHistory([{ role: "system", content: "안녕하세요. 무엇을 도와드릴까요?" }]);
-  };
-
-  const saveChat = async () => {
-    try {
-      await api.post('/saveChat', { chatData: chatHistory });
-      alert("채팅이 저장되었습니다.");
-    } catch (error) {
-      console.error("채팅 저장 중 오류 발생:", error);
-      alert("채팅 저장에 실패했습니다.");
-    }
+    
+    // Reset the chat history on the server
+    await fetch("/api/generate?endpoint=reset", { method: "POST" });
   };
 
   const fetchChatHistory = async () => {
     try {
-      const response = await api.get('/getChats');
-      setChatHistory(response.data);
-      router.push('/chatHistory');
+      const response = await axios.get('http://localhost:5000/api/getChats');
+      if (Array.isArray(response.data.chats)) {
+        setChatHistory(prevChatHistory => [
+          ...prevChatHistory,
+          ...response.data.chats
+        ]);
+      } else {
+        console.error('응답 데이터의 "chats" 키가 배열이 아닙니다:', response.data.chats);
+      }
     } catch (error) {
-      console.error("채팅 기록을 가져오는데 실패했습니다:", error);
-      alert("채팅 기록을 가져오는데 실패했습니다.");
+      console.error('채팅 기록을 가져오는데 실패했습니다:', error);
+    }
+  };
+
+  // page.jsx 내에서 fetchChatHistory 함수
+  useEffect(() => {
+    fetchChatHistory();
+  }, []);
+
+  const saveChat = async () => {
+    try {
+      await api.post('/saveChat', { chatHistory: chatHistory });
+      alert("채팅이 저장되었습니다.");
+      //fetchChatHistory();
+    } catch (error) {
+      console.error("채팅 저장 중 오류 발생:", error);
+      alert("채팅 저장에 실패했습니다.");
     }
   };
 
@@ -113,10 +133,15 @@ export default function AiChat() {
       <h1 className="text-4xl font-bold text-black mb-6">AI 챗</h1>
       <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6">
         <div className={styles.chatContainer} ref={chatContainerRef}>
-          {chatHistory && chatHistory.map((msg, index) => (
-            <div key={index} className={msg.role === "user" ? styles.userMessage : styles.assistantMessage}>
-            {msg.content}
-          </div>
+        {chatHistory && chatHistory
+          .filter(msg => msg.content && msg.content.trim() !== "") // 빈 메시지 필터링
+          .map((msg, index) => (
+            <div key={index} 
+              className={
+                msg.role === "user" ? styles.userMessage : styles.assistantMessage
+              }>
+              {msg.content}
+            </div>
           ))}
         </div>
         <form onSubmit={onSubmit} className="mt-4 justify-between">
@@ -135,18 +160,33 @@ export default function AiChat() {
             </button>
           </div>
         </form>
-        <div className="flex justify-between mt-4">
+        <div className="flex justify-end mt-2 space-x-2">
           <button onClick={clearChat} className="bg-custom-green hover:bg-custom-green-dark text-white font-bold py-2 px-4 rounded">
             초기화
           </button>
           <button onClick={saveChat} className="bg-custom-green hover:bg-custom-green-dark text-white font-bold py-2 px-4 rounded">
             채팅 저장
           </button>
-          <button onClick={fetchChatHistory} className="bg-custom-green hover:bg-custom-green-dark text-white font-bold py-2 px-4 rounded">
+          <button onClick={toggleModal} className="bg-custom-green hover:bg-custom-green-dark text-white font-bold py-2 px-4 rounded">
             채팅 내역
           </button>
         </div>
       </div>
+      {isModalOpen && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <span className={styles.closeButton} onClick={toggleModal}>&times;</span>
+            <h2>채팅 내역</h2>
+            {chatHistory.map((msg, index) => (
+              <div key={index}>
+                {msg.chatHistory && Array.isArray(msg.chatHistory) && msg.chatHistory.map((message, idx) => (
+                  <p key={idx}><strong>{message.role === 'user' ? '사용자' : '어시스턴트'}:</strong> {message.content}</p>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -2,31 +2,17 @@ import dotenv from 'dotenv'
 dotenv.config();
 
 import { MongoClient } from 'mongodb';
+import mongoose from 'mongoose';
 
-const uri = process.env.MONGODB_URI; // 환경 변수에서 MongoDB URI를 가져옵니다.
-const options = {
-  useUnifiedTopology: true,
-  useNewUrlParser: true,
-};
 
-let client;
-let connectDB;
-
-if (!process.env.MONGODB_URI) {
-  throw new Error('MONGODB_URI 환경 변수를 설정해주세요.');
-}
-
-if (process.env.NODE_ENV === 'development') {
-  // 개발 환경에서는 항상 새로운 MongoClient 인스턴스를 생성합니다.
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    global._mongoClientPromise = client.connect();
+const connectDB = async () => {
+  if (mongoose.connections[0].readyState) {
+    return;
   }
-  connectDB = global._mongoClientPromise;
-} else {
-  // 프로덕션 환경에서는 캐싱된 클라이언트를 재사용합니다.
-  client = new MongoClient(uri, options);
-  connectDB = client.connect();
-}
+  await mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+};
 
 export default connectDB;
