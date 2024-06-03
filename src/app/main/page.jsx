@@ -1,6 +1,5 @@
 "use client"
 import React, { useState, useRef, useEffect } from 'react';
-import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 import FullCalendar from '@fullcalendar/react';
@@ -19,8 +18,11 @@ export default function Main() {
   const [showButtons, setShowButtons] = useState(false); // 추가된 상태
   const [isBackgroundDimmed, setIsBackgroundDimmed] = useState(false); // 배경색 변경 상태 추가
   const [orderCounter, setOrderCounter] = useState(0); // 이벤트 순서를 추적할 카운터
-
+  const [selectedDateEvents, setSelectedDateEvents] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
   const calendarRef = useRef(null);
+
+  
 
   //달력에 직접 추가한 일정 수정 및 삭제
   const handleEventClick = (info) => {  
@@ -59,7 +61,7 @@ export default function Main() {
 
   const plusSchedule = async () => {
     const { value: formValues } = await Swal.fire({
-      title: '출발 날짜와 도착 날짜 선택',
+      title: '���발 날짜와 도착 날짜 선택',
       html: '<input id="startDate" class="swal2-input" type="date">' +
         '<input id="endDate" class="swal2-input" type="date">',
       focusConfirm: false,
@@ -152,6 +154,9 @@ export default function Main() {
         (eventStart >= selectedStart && eventStart < selectedEnd)
       );
     });
+
+    setSelectedDateEvents(foundEvents);
+    setSelectedDate(selectInfo.startStr);
 
     if (foundEvents.length > 0) {
       const eventDetails = foundEvents.map((event, index) => {
@@ -275,60 +280,53 @@ export default function Main() {
   // }
 
   return (
-    <div className="relative w-full h-screen max-w-6xl bg-white rounded-lg p-5 overflow-auto flex-col ">
-      {/* <button
-        className="bg-teal-500 text-white py-2 px-4 rounded-lg hover:bg-teal-600 transition"
-        onClick={() => signOut({ callbackUrl: '/login' })}
-      >
-        로그아웃
-      </button> */}
-      <div className={styles.calendarContainer}>
-        <div className={`${isBackgroundDimmed ? 'opacity-40' : 'opacity-100'} transition-opacity duration-300`}>
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={{
-              left: 'dayGridMonth timeGridWeek',
-              center: 'prev title next',
-              right: 'today'
-            }}
-            buttonText={{
-              today: '오늘',
-              month: '월',
-              week: '주'
-            }}
-            locale="ko" // 한글로 변경
-            editable={true}
-            selectable={true}
-            selectMirror={true}
-            dayMaxEvents={true}
-            weekends={true}
-            events={events}
-            select={handleDateSelect}
-            eventClick={handleEventClick}
-            dayHeaderFormat={{ weekday: 'short' }} // 요일 형식 지정
-            dayCellContent={(e) => e.dayNumberText.replace('일', '')} // 날짜 형식에서 "일" 제거
-            eventContent={(eventInfo) => (
-            { html: `<div>${eventInfo.event.title || eventInfo.event.extendedProps.schedule}</div>` }
-            )}
-            views={{
-              timeGridWeek: {
-                dayHeaderFormat: { weekday: 'short', day: 'numeric' } // 주간 뷰에서 요일과 날짜 형식 지정
-              }
-            }}
-            dayCellClassNames={(arg) => {
-              if (arg.date.getDay() === 0) {
-                return 'fc-day-sun'; // 일요일
-              } else if (arg.date.getDay() === 6) {
-                return 'fc-day-sat'; // 토요일
-              }
-              return '';
-            }}
-          />
-        
-      </div>
-      </div>
-      <div className={styles.buttonContainer}>
+    <div className="relative w-screen h-screen bg-white p-5 overflow-auto flex justify-center items-center">
+      <div className="max-w-6xl w-full h-full bg-white rounded-lg flex-col">
+        <div className={styles.calendarContainer}>
+          <div className={`${isBackgroundDimmed ? 'opacity-40' : 'opacity-100'} transition-opacity duration-300`}>
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+              initialView="dayGridMonth"
+              headerToolbar={{
+                left: 'dayGridMonth timeGridWeek',
+                center: 'prev title next',
+                right: 'today'
+              }}
+              buttonText={{
+                today: '오늘',
+                month: '월',
+                week: '주'
+              }}
+              locale="ko" // 한글로 변경
+              editable={true}
+              selectable={true}
+              selectMirror={true}
+              dayMaxEvents={true}
+              weekends={true}
+              events={events}
+              select={handleDateSelect}
+              eventClick={handleEventClick}
+              dayHeaderFormat={{ weekday: 'short' }} // 요일 형식 지정
+              dayCellContent={(e) => e.dayNumberText.replace('일', '')} // 날짜 형식에서 "일" 제거
+              eventContent={(eventInfo) => (
+              { html: `<div>${eventInfo.event.title || eventInfo.event.extendedProps.schedule}</div>` }
+              )}
+              views={{
+                timeGridWeek: {
+                  dayHeaderFormat: { weekday: 'short', day: 'numeric' } // 주간 뷰에서 요일과 날짜 형식 지정
+                }
+              }}
+              dayCellClassNames={(arg) => {
+                if (arg.date.getDay() === 0) {
+                  return 'fc-day-sun'; // 일요일
+                } else if (arg.date.getDay() === 6) {
+                  return 'fc-day-sat'; // 토요일
+                }
+                return '';
+              }}
+            />
+          </div>
+          <div className={styles.buttonContainer}>
         <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={toggleButtons}>+</button>
         <div className={`${styles.buttonGroup} ${showButtons ? styles.show : ''}`}>
           <div className="buttonWrapper">
@@ -350,9 +348,13 @@ export default function Main() {
             </button>
           </div>
         </div>
+        
+      </div>
+        </div>
       </div>
     </div>
     
   );
 };
+
 

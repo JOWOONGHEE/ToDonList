@@ -12,7 +12,7 @@ const handler = async (req, res) => {
         chatHistory: req.body.chatHistory
       });
       const client = await MongoClient.connect(process.env.MONGODB_URI);
-      const db = await client.db('Chat');
+      const db = client.db('Chat');
       const collection = db.collection("chats");
 
       const result = await collection.insertOne({ chatHistory, createdAt: new Date() });

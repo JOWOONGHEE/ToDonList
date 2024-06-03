@@ -46,7 +46,6 @@ export default function Login() {
         event.preventDefault();
         console.log("로그인 시도");
         console.log(emailRef.current.value);
-        console.log(passwordRef.current.value);
         const email = emailRef.current.value;
         const password = passwordRef.current.value;
 

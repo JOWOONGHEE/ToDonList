@@ -127,7 +127,7 @@
 /* 플러스 버튼들*/
 .buttonContainer{
     position: absolute;
-    bottom: 15px;
+    bottom: 30px;
     right: 10px;
     display: flex;
     flex-direction: column;
@@ -161,7 +161,7 @@
   width: 50px; /* 버튼 크기 */
   height: 50px; /* 버튼 크기 */
   transition: all 0.3s ease;
-  bottom: 20px; /* 아래쪽에서 20px */
+  bottom: 30px; /* 아래쪽에서 20px */
   right: 2px; /* 오른쪽에서 20px */
   z-index: 1001;
   display: flex;
@@ -244,3 +244,16 @@
   z-index: 1001;
 }
 
+.selected-date-events {
+  margin-top: 20px;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.selected-date-events h3 {
+  margin-bottom: 10px;
+}
+
+.selected-date-events p {
+  margin: 5px 0;
+}

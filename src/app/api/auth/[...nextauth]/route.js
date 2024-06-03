@@ -5,11 +5,12 @@ import KakaoProvider from "next-auth/providers/kakao"
 import NaverProvider from "next-auth/providers/naver";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 
-import connectDB from "../../../../lib/mongodb.mjs";
+import connectDB from "../../../../lib/mongodb.js";
 import bcrypt from 'bcrypt';
 const mongoose = require('mongoose');
 
 export const authOptions =({
+  
   providers:[
     CredentialsProvider({
       id: "credentials",
@@ -101,7 +102,7 @@ export const authOptions =({
     signUp: "/signup",
   },
   
-  adapter: MongoDBAdapter(connectDB),
+  // adapter: MongoDBAdapter(connectDB),
   database: process.env.MONGODB_URI,
   secret: process.env.NEXTAUTH_SECRET
 })

@@ -8,7 +8,9 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true
 });
 const bcrypt = require('bcrypt');
-
+const sendVerification = require('../api/sendVerification');
+const verifyPassword = require('../api/verifyPassword');
+const verifyCodeHandler = require('../api/verifyCode');
 
 const chatMessage = require('../api/chatMessage'); // 모델 임포트
 const generateHandler = require('../api/generate');
@@ -23,6 +25,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
+
+
 // generate.js를 /api/generate 경로에 연결
 app.use('/api/generate', generateHandler);
 app.use('/api/getChats', getChatsHandler);
@@ -136,17 +140,21 @@ app.get('/getChats', async (req, res) => {
   }
 });
 
+app.post('/api/sendVerification', sendVerification);
+app.post('/api/verifyPassword', verifyPassword);
+app.get('/api/verifyPassword', verifyPassword);
+app.post('/api/verifyCode', verifyCodeHandler);
 
 app.post('/api/signup', async (req, res) => {
   try {
     const { email, password } = req.body;
     // 입력 데이터 검증
-    if (!email.includes('@')) {
-      return res.status(400).json({ error: 'Invalid email format' });
-    }
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password too short' });
-    }
+    // if (!email.includes('@')) {
+    //   return res.status(400).json({ error: 'Invalid email format' });
+    // }
+    // if (password.length < 6) {
+    //   return res.status(400).json({ error: 'Password too short' });
+    // }
     
     const hash = await bcrypt.hash(password, 10);
     // 회원가입 로직 (데이터베이스 저장 등)
