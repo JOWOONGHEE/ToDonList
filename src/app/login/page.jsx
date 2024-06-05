@@ -61,6 +61,11 @@ export default function Login() {
               alert('로그인 실패: ' + result.error);
             } else {
               console.log('로그인 성공');
+              const userData = {
+                email: email,
+                lastLogin: new Date().toISOString() // 추가 데이터 예시
+              };
+              saveUserData(email, userData);
               router.push('/main'); // 성공 시 메인으로 리디렉션
             }
           } catch (error) {
@@ -69,14 +74,24 @@ export default function Login() {
           }
     };
 
+    function saveUserData(email, data) {
+        localStorage.setItem(`userData_${email}`, JSON.stringify(data));
+    }
+
     useEffect(() => {
         if (sessionStatus === 'loading') {
             console.log("로딩중입니다.");
         }
-        if (sessionStatus === 'authenticated') {
+        if (sessionStatus === 'authenticated' && sessionData?.user?.email) {
+
+            // 로컬 스토리지에 사용자별 설정 저장 예시
+            const userSettings = { theme: 'dark', notifications: true };
+            localStorage.setItem(`userSettings_${sessionData.user.email}`, JSON.stringify(userSettings));
+
             router.push('/main');
         }
-      }, [sessionStatus, router]);
+      }, [sessionStatus, router, sessionData]);
+
 
     return (
         <main className='flex min-h-screen flex-col items-center bg-custom-green-light space-y-8 p-16 sm:p-8 md:p-12'>

@@ -9,6 +9,6 @@ const chatSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const Chat = mongoose.model('Chat', chatSchema);
+const Chat = mongoose.model('forum', chatSchema);
 
 module.exports = Chat;

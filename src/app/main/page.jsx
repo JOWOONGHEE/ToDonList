@@ -1,6 +1,8 @@
 "use client"
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+
 
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -21,8 +23,27 @@ export default function Main() {
   const [selectedDateEvents, setSelectedDateEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const calendarRef = useRef(null);
+  const { data: sessionData } = useSession();
 
-  
+  useEffect(() => {
+    if (sessionData && sessionData.user && sessionData.user.email) {
+        const userEmail = sessionData.user.email;
+        const userData = JSON.parse(localStorage.getItem(`userData_${userEmail}`));
+        console.log("불러온 사용자 데이터:", userData);
+        // userData를 사용하여 필요한 작업 수행
+    }
+  }, [sessionData]);
+
+  useEffect(() => {
+      // 로컬 스토리지에서 데이터 불러오기
+      const savedEvents = localStorage.getItem('events');
+      if (savedEvents) setEvents(JSON.parse(savedEvents));
+  }, []);
+
+  useEffect(() => {
+      // 데이터가 변경될 때마다 로컬 스토리지에 저장
+      localStorage.setItem('events', JSON.stringify(events));
+  }, [events]);
 
   //달력에 직접 추가한 일정 수정 및 삭제
   const handleEventClick = (info) => {  
@@ -61,7 +82,7 @@ export default function Main() {
 
   const plusSchedule = async () => {
     const { value: formValues } = await Swal.fire({
-      title: '���발 날짜와 도착 날짜 선택',
+      title: '출발 날짜와 도착 날짜 선택',
       html: '<input id="startDate" class="swal2-input" type="date">' +
         '<input id="endDate" class="swal2-input" type="date">',
       focusConfirm: false,
@@ -356,5 +377,6 @@ export default function Main() {
     
   );
 };
+
 
 

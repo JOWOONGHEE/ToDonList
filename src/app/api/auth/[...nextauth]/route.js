@@ -64,6 +64,10 @@ export const authOptions =({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
+    session: async (session, user) => {
+      session.user.email = user.email; // DB에서 이메일을 가져와 세션에 추가
+      return session;
+    },
     async signIn({ user, account, profile, email, credentials, password }) {
       // SNS 로그인 처리
       if (account && account.provider) {

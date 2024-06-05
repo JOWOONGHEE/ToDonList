@@ -14,7 +14,7 @@ const handler = async (req, res) => {
     let client;
     try {
       client = await connectToDatabase(process.env.MONGODB_URI);
-      const db = client.db('Chat');
+      const db = client.db('forum');
       const collection = db.collection("chats");
       const chats = await collection.find({}).sort({ createdAt: -1 }).limit(1).toArray();
       res.status(200).json({ chats: chats });

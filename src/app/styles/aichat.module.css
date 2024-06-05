@@ -294,3 +294,39 @@
   font-weight: bold;
   margin-top: 40px;
 }
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: 90%;
+  max-width: 600px;
+  background-color: white;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.modalContent {
+  overflow-y: auto;
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.modalTitle {
+  text-align: center; /* 제목을 가운데로 정렬 */
+  margin-bottom: 20px; /* 제목과 내역 사이에 간격 추가 */
+  font-weight: bold; /* 글씨를 굵게 */
+  font-size: 20px;
+  margin-bottom: 20px; /* 각 내역 사이에 간격 추가 */
+  
+}
+

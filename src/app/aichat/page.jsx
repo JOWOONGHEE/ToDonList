@@ -112,7 +112,8 @@ export default function AiChat() {
 
   const saveChat = async () => {
     try {
-      await api.post('/saveChat', { chatHistory: chatHistory });
+      const filteredChatHistory = chatHistory.filter(msg => !msg.chatHistory);
+      await api.post('/saveChat', { chatHistory: filteredChatHistory });
       alert("채팅이 저장되었습니다.");
       //fetchChatHistory();
     } catch (error) {
@@ -176,11 +177,13 @@ export default function AiChat() {
         <div className={styles.modal}>
           <div className={styles.modalContent}>
             <span className={styles.closeButton} onClick={toggleModal}>&times;</span>
-            <h2>채팅 내역</h2>
+            <h2 className={styles.modalTitle}>채팅 내역</h2>
             {chatHistory.map((msg, index) => (
-              <div key={index}>
+              <div key={index} className={styles.chatMessage}>
                 {msg.chatHistory && Array.isArray(msg.chatHistory) && msg.chatHistory.map((message, idx) => (
-                  <p key={idx}><strong>{message.role === 'user' ? '사용자' : '어시스턴트'}:</strong> {message.content}</p>
+                  <p key={idx} className={styles.messageContent}>
+                    <strong>{message.role === 'user' ? '사용자' : '어시스턴트'}:</strong> {message.content}
+                  </p>
                 ))}
               </div>
             ))}
