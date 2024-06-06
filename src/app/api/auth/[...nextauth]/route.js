@@ -36,7 +36,7 @@ export const authOptions =({
             console.log('Incorrect password');
             return null;
           }
-          return user;
+          return { email: user.email }; // 예시: 필요한 정보만 명시적으로 반환
         } catch (error) {
           console.error('Error in authorize function:', error);
           return null;
@@ -59,25 +59,23 @@ export const authOptions =({
     allowDangerousEmailAccountLinking: true,
   }),
   ],
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
   callbacks: {
-    session: async (session, user) => {
-      session.user.email = user.email; // DB에서 이메일을 가져와 세션에 추가
-      return session;
-    },
     async signIn({ user, account, profile, email, credentials, password }) {
       // SNS 로그인 처리
+      if (account.provider === 'kakao') {
+        return true;  // 카카오 로그인 성공 후 메인 페이지로 리디렉션
+    }
       if (account && account.provider) {
         // SNS 제공자에 따른 추가적인 검증이 필요하다면 여기에 로직 추가
+        console.log(account.provider);
         return true;  // SNS 로그인은 기본적으로 성공으로 간주
       }
     
       // 이메일과 비밀번호를 사용한 로그인 처리
       if (email && password) {
         console.log(db.databaseName);
+        await connectDB();
+        const db = mongoose.connection.useDb('forum');
         const userDB = await db.collection('user_cred').findOne({ email });
         if (!userDB) {
           return false;  // 사용자가 없으면 로그인 거부
@@ -86,25 +84,26 @@ export const authOptions =({
         return isPasswordCorrect;  // 비밀번호가 맞으면 true, 틀리면 false 반환
       }
     },
-    async jwt(token, user) {
+    async jwt({ token, user }) {
       if (user) {
-        token.user.email = user.email
-      } 
+        token.user = { email: user.email }; // 사용자 이메일을 토큰에 추가
+      }
       return token;
     },
-    session: async ({ session, token }) => {
+    async session({ session, token }) {
       if (token.user) {
-        session.user = {
-          email: token.user.email
-        };
+          session.user = token.user;
+          session.user.provider = token.provider; // 공급자 정보를 세션에 추가
       }
       return session;
-    },
+   }
+    
   },
   pages: {
     signIn: "/login",
     signUp: "/signup",
   },
+  
   
   // adapter: MongoDBAdapter(connectDB),
   database: process.env.MONGODB_URI,

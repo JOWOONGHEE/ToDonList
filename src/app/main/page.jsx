@@ -25,25 +25,37 @@ export default function Main() {
   const calendarRef = useRef(null);
   const { data: sessionData } = useSession();
 
-  useEffect(() => {
-    if (sessionData && sessionData.user && sessionData.user.email) {
-        const userEmail = sessionData.user.email;
-        const userData = JSON.parse(localStorage.getItem(`userData_${userEmail}`));
-        console.log("불러온 사용자 데이터:", userData);
-        // userData를 사용하여 필요한 작업 수행
+useEffect(() => {
+  const userEmail = sessionData?.user?.email;
+  if (userEmail) {
+    const savedEvents = localStorage.getItem(`events_${userEmail}`);
+    if (savedEvents) {
+      setEvents(JSON.parse(savedEvents));
     }
-  }, [sessionData]);
+  }
+}, [sessionData]);
+
+useEffect(() => {
+  if (sessionData && sessionData.user && sessionData.user.email && sessionData.user.provider) {
+      const userKey = `${sessionData.user.provider}_${sessionData.user.email}`;
+      const userData = JSON.parse(localStorage.getItem(`userData_${userKey}`));
+      console.log("불러온 사용자 데이터:", userData);
+
+      const savedEvents = localStorage.getItem(`events_${userKey}`);
+      if (savedEvents) {
+          setEvents(JSON.parse(savedEvents));
+      } else {
+          setEvents([]); // 저장된 데이터가 없는 경우 빈 배열로 초기화
+      }
+  }
+}, [sessionData]);
 
   useEffect(() => {
-      // 로컬 스토리지에서 데이터 불러오기
-      const savedEvents = localStorage.getItem('events');
-      if (savedEvents) setEvents(JSON.parse(savedEvents));
-  }, []);
-
-  useEffect(() => {
-      // 데이터가 변경될 때마다 로컬 스토리지에 저장
-      localStorage.setItem('events', JSON.stringify(events));
-  }, [events]);
+      if (sessionData && sessionData.user && sessionData.user.email) {
+          // 데이터가 변경될 때마다 로컬 스토리지에 저장
+          localStorage.setItem(`events_${sessionData.user.email}`, JSON.stringify(events));
+      }
+  }, [events, sessionData]);
 
   //달력에 직접 추가한 일정 수정 및 삭제
   const handleEventClick = (info) => {  

@@ -10,22 +10,35 @@ export default function accountBook() {
   const [expenses, setExpenses] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [view, setView] = useState('expense'); // 'expense' 또는 'income'을 저장하는 상태
-  const { data: sessionData } = useSession(); // 세션 데이터 불러오기
-  
-  useEffect(() => {
-    // 로컬 스토리지에서 데이터 불러오기
-    const savedExpenses = localStorage.getItem('expenses');
-    const savedIncomes = localStorage.getItem('incomes');
-    if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
-    if (savedIncomes) setIncomes(JSON.parse(savedIncomes));
-  }, []);
+  //const { data: sessionData } = useSession(); // 세션 데이터 불러오기
+  const { data: sessionData, status } = useSession();
 
   useEffect(() => {
-    // 데이터가 변경될 때마다 로컬 스토리지에 저장
-    localStorage.setItem('expenses', JSON.stringify(expenses));
-    localStorage.setItem('incomes', JSON.stringify(incomes));
-    updateChart();
-  }, [expenses, incomes, view]);
+    console.log("세션 데이터:", sessionData); // 세션 데이터 전체를 로그로 출력
+    if (sessionData && sessionData.user && sessionData.user.email) {
+        const userEmail = sessionData.user.email;
+        console.log("세션 데이터 있음:", userEmail); // 세션 데이터 확인
+        const savedExpenses = localStorage.getItem(`expenses_${userEmail}`);
+        const savedIncomes = localStorage.getItem(`incomes_${userEmail}`);
+        if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
+        if (savedIncomes) setIncomes(JSON.parse(savedIncomes));
+    } else {
+        console.log("세션 데이터 또는 이메일이 없음");
+    }
+}, [sessionData]);
+
+    useEffect(() => {
+        if (sessionData && sessionData.user && sessionData.user.email) {
+            const userEmail = sessionData.user.email;
+            console.log("저장 시도: ", expenses, incomes); // 저장되는 데이터 확인
+            try {
+                localStorage.setItem(`expenses_${userEmail}`, JSON.stringify(expenses));
+                localStorage.setItem(`incomes_${userEmail}`, JSON.stringify(incomes));
+            } catch (error) {
+                console.error("로컬 스토리지 저장 실패:", error);
+            }
+        }
+    }, [expenses, incomes, sessionData]);
 
   const addTransaction = (type) => {
     const amountInput = document.getElementById(`amount${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
