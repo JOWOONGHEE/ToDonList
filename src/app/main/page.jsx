@@ -23,39 +23,39 @@ export default function Main() {
   const [selectedDateEvents, setSelectedDateEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const calendarRef = useRef(null);
-  const { data: sessionData } = useSession();
+  const { data: sessionData, status } = useSession();
 
-useEffect(() => {
-  const userEmail = sessionData?.user?.email;
-  if (userEmail) {
-    const savedEvents = localStorage.getItem(`events_${userEmail}`);
-    if (savedEvents) {
-      setEvents(JSON.parse(savedEvents));
+  useEffect(() => {
+    if (status === 'authenticated' && sessionData?.user?.email) {
+      const userEmail = sessionData.user.email;
+      const savedEvents = localStorage.getItem(`events_${userEmail}`);
+      if (savedEvents) {
+        setEvents(JSON.parse(savedEvents));
+      }
     }
-  }
-}, [sessionData]);
+  }, [sessionData, status]);
 
-useEffect(() => {
-  if (sessionData && sessionData.user && sessionData.user.email && sessionData.user.provider) {
+  useEffect(() => {
+    if (status === 'authenticated' && sessionData?.user?.email && sessionData.user.provider) {
       const userKey = `${sessionData.user.provider}_${sessionData.user.email}`;
       const userData = JSON.parse(localStorage.getItem(`userData_${userKey}`));
       console.log("불러온 사용자 데이터:", userData);
 
       const savedEvents = localStorage.getItem(`events_${userKey}`);
       if (savedEvents) {
-          setEvents(JSON.parse(savedEvents));
+        setEvents(JSON.parse(savedEvents));
       } else {
-          setEvents([]); // 저장된 데이터가 없는 경우 빈 배열로 초기화
+        setEvents([]); // 저장된 데이터가 없는 경우 빈 배열로 초기화
       }
-  }
-}, [sessionData]);
+    }
+  }, [sessionData, status]);
 
   useEffect(() => {
-      if (sessionData && sessionData.user && sessionData.user.email) {
-          // 데이터가 변경될 때마다 로컬 스토리지에 저장
-          localStorage.setItem(`events_${sessionData.user.email}`, JSON.stringify(events));
-      }
-  }, [events, sessionData]);
+    if (status === 'authenticated' && sessionData?.user?.email) {
+      // 데이터가 변경될 때마다 로컬 스토리지에 저장
+      localStorage.setItem(`events_${sessionData.user.email}`, JSON.stringify(events));
+    }
+  }, [events, sessionData, status]);
 
   //달력에 직접 추가한 일정 수정 및 삭제
   const handleEventClick = (info) => {  
@@ -330,7 +330,7 @@ useEffect(() => {
                 month: '월',
                 week: '주'
               }}
-              locale="ko" // 한글로 변경
+              locale="ko"
               editable={true}
               selectable={true}
               selectMirror={true}
@@ -339,56 +339,51 @@ useEffect(() => {
               events={events}
               select={handleDateSelect}
               eventClick={handleEventClick}
-              dayHeaderFormat={{ weekday: 'short' }} // 요일 형식 지정
-              dayCellContent={(e) => e.dayNumberText.replace('일', '')} // 날짜 형식에서 "일" 제거
+              dayHeaderFormat={{ weekday: 'short' }}
+              dayCellContent={(e) => e.dayNumberText.replace('일', '')}
               eventContent={(eventInfo) => (
-              { html: `<div>${eventInfo.event.title || eventInfo.event.extendedProps.schedule}</div>` }
+                { html: `<div>${eventInfo.event.title || eventInfo.event.extendedProps.schedule}</div>` }
               )}
               views={{
                 timeGridWeek: {
-                  dayHeaderFormat: { weekday: 'short', day: 'numeric' } // 주간 뷰에서 요일과 날짜 형식 지정
+                  dayHeaderFormat: { weekday: 'short', day: 'numeric' }
                 }
               }}
               dayCellClassNames={(arg) => {
                 if (arg.date.getDay() === 0) {
-                  return 'fc-day-sun'; // 일요일
+                  return 'fc-day-sun';
                 } else if (arg.date.getDay() === 6) {
-                  return 'fc-day-sat'; // 토요일
+                  return 'fc-day-sat';
                 }
                 return '';
               }}
             />
           </div>
           <div className={styles.buttonContainer}>
-        <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={toggleButtons}>+</button>
-        <div className={`${styles.buttonGroup} ${showButtons ? styles.show : ''}`}>
-          <div className="buttonWrapper">
-            <span className={styles.buttonText}>AI 챗</span>
-            <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => router.push('/aichat')}>
-              <img src="/assets/aiLogo.png" alt="AI" className={styles.buttonIcon} />
-            </button>
+            <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={toggleButtons}>+</button>
+            <div className={`${styles.buttonGroup} ${showButtons ? styles.show : ''}`}>
+              <div className="buttonWrapper">
+                <span className={styles.buttonText}>AI 챗</span>
+                <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => router.push('/aichat')}>
+                  <img src="/assets/aiLogo.png" alt="AI" className={styles.buttonIcon} />
+                </button>
+              </div>
+              <div className="buttonWrapper">
+                <span className={styles.buttonText}>가계부</span>
+                <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => router.push('/accountbook')}>
+                  <img src="/assets/accountbookLogo.png" alt="Account Book" className={styles.buttonIcon} />
+                </button>
+              </div>
+              <div className="buttonWrapper">
+                <span className={styles.buttonText}>일정</span>
+                <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={plusSchedule}>
+                  <img src="/assets/calenderLogo.png" alt="Schedule" className={styles.buttonIcon} />
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="buttonWrapper">
-            <span className={styles.buttonText}>가계부</span>
-            <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => router.push('/accountbook')}>
-              <img src="/assets/accountbookLogo.png" alt="Account Book" className={styles.buttonIcon} />
-            </button>
-          </div>
-          <div className="buttonWrapper">
-            <span className={styles.buttonText}>일정</span>
-            <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={() => plusSchedule()}>
-              <img src="/assets/calenderLogo.png" alt="Schedule" className={styles.buttonIcon} />
-            </button>
-          </div>
-        </div>
-        
-      </div>
         </div>
       </div>
     </div>
-    
   );
 };
-
-
-

@@ -1,7 +1,7 @@
 "use client"
 import React, { useRef, useEffect } from 'react';
-import { signIn, signOut, useSession } from 'next-auth/react';
-import { redirect, useRouter } from 'next/navigation';
+import { signIn, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
 export default function Login() {
