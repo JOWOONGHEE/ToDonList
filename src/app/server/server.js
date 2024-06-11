@@ -52,6 +52,12 @@ const db = mongoose.connection.useDb('forum');
 let connections = []; // 연결된 클라이언트를 관리하는 배열
 
 app.post('/api/saveChat', saveChatHandler);
+app.post('/saveChat', (req, res) => {
+  const { userEmail, chatHistory } = req.body;
+  // 채팅 저장 로직 구현
+  console.log(`채팅 저장: ${userEmail}`);
+  res.status(200).send('채팅 저장 성공');
+});
 // 챗 내용을 저장하는 라우트
 app.post('/api/messages', async (req, res) => {
   try {
@@ -68,53 +74,7 @@ app.post('/api/messages', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-// 채팅 생성 및 스트리밍 응답을 처리하는 라우트
-app.post('/api/generate', async (req, res) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-  const endpoint  = req.query.endpoint;
-  if (endpoint === 'chat') {
-    try {
-      const { message } = req.body;
-      // 채팅 처리 로직 구현
-      console.log('Received message:', message);
-      res.status(200).send({ success: true, message: '응답 메시지' });
-    } catch (error) {
-      res.status(500).send({ message: '채팅 처리 중 오류 발생', error });
-    }
-  } else if (endpoint === 'reset') {
-    // 채팅 리셋 로직 구현
-    res.status(200).send({ success: true });
-  } else if (endpoint === 'stream') {
-    res.status(200).send({ success: true });
-  } else {
-    res.status(404).send("Not Found");
-}
-});
 
-app.get('/api/generate', (req, res) => {
-  const { endpoint } = req.query;
-  if (endpoint === 'stream') {
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    
-    connections.push(res); // 새 클라이언트 연결 추가
-    req.on('close', () => {
-      connections = connections.filter(conn => conn !== res); // 연결이 종료될 때 배열에서 제거
-    });
-    // 스트림 데이터를 보내는 로직
-    setInterval(() => {
-      res.write(`data: ${JSON.stringify({ message: "Hello from server!" })}\n\n`);
-    }, 1000);
-    // 스트리밍 로직 구현
-    res.status(200).send({ success: true, message: '스트리밍 시작됨' });
-  } else {
-    res.status(404).send({ error: 'Invalid endpoint' });
-  }
-  
-});
 
 app.post('/api/messages', async (req, res) => {
   try {
@@ -130,15 +90,6 @@ app.post('/api/messages', async (req, res) => {
   }
 });
 
-app.get('/getChats', async (req, res) => {
-  try {
-      // 채팅 기록을 데이터베이스에서 조회
-      const chats = await Chat.find({});
-      res.status(200).json(chats);
-  } catch (error) {
-      res.status(500).json({ message: '채팅 기록을 가져오는데 실패했습니다', error: error });
-  }
-});
 
 app.post('/api/sendVerification', sendVerification);
 app.post('/api/verifyPassword', verifyPassword);

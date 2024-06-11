@@ -1,38 +1,45 @@
 const { MongoClient } = require('mongodb');
-const Chat = require('../models/Chat');
+
+async function connectToDatabase(uri) {
+  const client = new MongoClient(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  await client.connect();
+  return client;
+}
 
 const handler = async (req, res) => {
   if (req.method === 'POST') {
+    let client;
     try {
-      const { chatHistory } = req.body;
-      if (!req.body.chatHistory) {
-        throw new Error("chatHistory is undefined");
+      const { userEmail, chatHistory, collection } = req.body;
+      if (!userEmail || !chatHistory || !collection) {
+        return res.status(400).json({ message: 'userEmail, chatHistory, and collection are required' });
       }
-      const chat = new Chat({
-        chatHistory: req.body.chatHistory
-      });
-      const client = await MongoClient.connect(process.env.MONGODB_URI);
-      const db = client.db('forum');
-      const collection = db.collection("chats");
 
-      const result = await collection.insertOne({ chatHistory, createdAt: new Date() });
-      console.log("Insert result:", result);
-      console.log("채팅 저장 완료");
-      client.close();
-      res.status(200).json({ message: '채팅이 성공적으로 저장되었습니다.' });
+      client = await connectToDatabase(process.env.MONGODB_URI);
+      const db = client.db('forum');
+      const selectedCollection = db.collection(collection);
+
+      await selectedCollection.insertOne({
+        userEmail,
+        chatHistory,
+        createdAt: new Date()
+      });
+
+      res.status(200).json({ message: 'Chat saved successfully' });
     } catch (error) {
       console.error("Error saving chat:", error);
-      if (error.message === "chatData is undefined") {
-        res.status(400).json({ message: 'chatData가 정의되지 않았습니다.' });
-      } else {
-        res.status(500).json({ message: '채팅 저장에 실패하였습니다.' });
+      res.status(500).json({ message: 'Failed to save chat' });
+    } finally {
+      if (client) {
+        client.close();
       }
     }
   } else {
-    console.log("채팅 저장 실패");
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
 
 module.exports = handler;
-

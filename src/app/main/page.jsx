@@ -16,6 +16,8 @@ import '../styles/fullcalender-custom.css';
 
 export default function Main() {
   const [events, setEvents] = useState([]);
+  const [totalExpense, setTotalExpense] = useState(0);
+  const [totalIncome, setTotalIncome] = useState(0);
   const router = useRouter();
   const [showButtons, setShowButtons] = useState(false); // 추가된 상태
   const [isBackgroundDimmed, setIsBackgroundDimmed] = useState(false); // 배경색 변경 상태 추가
@@ -31,6 +33,8 @@ export default function Main() {
       const savedEvents = localStorage.getItem(`events_${userEmail}`);
       if (savedEvents) {
         setEvents(JSON.parse(savedEvents));
+      } else {
+        setEvents([]); // 저장된 데이터가 없는 경우 빈 배열로 초기화
       }
     }
   }, [sessionData, status]);
@@ -56,6 +60,24 @@ export default function Main() {
       localStorage.setItem(`events_${sessionData.user.email}`, JSON.stringify(events));
     }
   }, [events, sessionData, status]);
+
+  useEffect(() => {
+    if (status === 'authenticated' && sessionData?.user?.email) {
+      const userEmail = sessionData.user.email;
+      const savedExpenses = localStorage.getItem(`expenses_${userEmail}`);
+      const savedIncomes = localStorage.getItem(`incomes_${userEmail}`);
+      if (savedExpenses) {
+        const expenses = JSON.parse(savedExpenses);
+        const total = expenses.reduce((acc, cur) => acc + parseFloat(cur.amount.replace(/\D/g, "")), 0);
+        setTotalExpense(total);
+      }
+      if (savedIncomes) {
+        const incomes = JSON.parse(savedIncomes);
+        const total = incomes.reduce((acc, cur) => acc + parseFloat(cur.amount.replace(/\D/g, "")), 0);
+        setTotalIncome(total);
+      }
+    }
+  }, [sessionData, status]);
 
   //달력에 직접 추가한 일정 수정 및 삭제
   const handleEventClick = (info) => {  
@@ -315,6 +337,12 @@ export default function Main() {
   return (
     <div className="relative w-screen h-screen bg-white p-5 overflow-auto flex justify-center items-center">
       <div className="max-w-6xl w-full h-full bg-white rounded-lg flex-col">
+        <div className="flex justify-between items-center p-4">
+        <div>
+            <h2 className="text-lg font-semibold" style={{ color: 'red' }}>총 지출: -{totalExpense.toLocaleString()}원</h2>
+            <h2 className="text-lg font-semibold" style={{ color: 'blue' }}>총 수입: +{totalIncome.toLocaleString()}원</h2>
+          </div>
+        </div>
         <div className={styles.calendarContainer}>
           <div className={`${isBackgroundDimmed ? 'opacity-40' : 'opacity-100'} transition-opacity duration-300`}>
             <FullCalendar

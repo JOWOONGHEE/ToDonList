@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useSession } from 'next-auth/react';
 import Chart from "chart.js/auto";
 import styles from "../styles/accountbook.module.css";
 
@@ -13,6 +14,37 @@ export default function AccountBook() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionType, setTransactionType] = useState("");
   const [currentView, setCurrentView] = useState("expense"); // 초기값을 "expense"로 설정
+  const { data: sessionData } = useSession();
+
+ // 세션 데이터가 변경될 때 로컬 스토리지에서 데이터 로드
+ useEffect(() => {
+    console.log("세션 데이터:", sessionData);
+    if (sessionData && sessionData.user && sessionData.user.email) {
+        const userEmail = sessionData.user.email;
+        console.log("세션 데이터 있음:", userEmail);
+        const savedExpenses = localStorage.getItem(`expenses_${userEmail}`);
+        const savedIncomes = localStorage.getItem(`incomes_${userEmail}`);
+        if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
+        if (savedIncomes) setIncomes(JSON.parse(savedIncomes));
+    } else {
+        console.log("세션 데이터 또는 이메일이 없음");
+    }
+}, [sessionData]);
+
+// expenses 또는 incomes가 변경될 때 로컬 스토리지에 저장
+useEffect(() => {
+    if (sessionData && sessionData.user && sessionData.user.email) {
+        const userEmail = sessionData.user.email;
+        console.log("저장 시도: ", expenses, incomes);
+        try {
+            localStorage.setItem(`expenses_${userEmail}`, JSON.stringify(expenses));
+            localStorage.setItem(`incomes_${userEmail}`, JSON.stringify(incomes));
+        } catch (error) {
+            console.error("로컬 스토리지 저장 실패:", error);
+        }
+    }
+}, [expenses, incomes, sessionData]);
+
 
   useEffect(() => {
     updateCharts();
@@ -184,7 +216,9 @@ export default function AccountBook() {
 
     sortedList.forEach((item) => {
       const newRow = document.createElement("tr");
-      const formattedTime = item.time.toLocaleTimeString("ko-KR", {
+      const time = new Date(item.time);
+      console.log(time.toLocaleTimeString()); // 이제 정상적으로 작동해야 함
+      const formattedTime = time.toLocaleTimeString("ko-KR", {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
@@ -368,9 +402,39 @@ export default function AccountBook() {
     <div className="min-h-screen bg-custom-green-light flex flex-col items-center p-4 md:p-8">
     <div className="text-2xl md:text-3xl font-bold text-black mb-4 md:mb-6">To-Don List</div>
     <div>
-      <button onClick={() => setCurrentView("expense")}>지출 보기</button>
-      <button onClick={() => setCurrentView("income")}>수입 보기</button>
-    </div>
+        <button
+            onClick={() => setCurrentView("expense")}
+            style={{
+            backgroundColor: currentView === "expense" ? "#87CEEB" : "white",
+            color: currentView === "expense" ? "white" : "#87CEEB",
+            border: "none",
+            borderRadius: "20px",
+            padding: "10px 20px",
+            margin: "5px",
+            cursor: "pointer",
+            outline: "none",
+            boxShadow: "0px 2px 5px rgba(0,0,0,0.1)"
+            }}
+        >
+            지출
+        </button>
+        <button
+            onClick={() => setCurrentView("income")}
+            style={{
+            backgroundColor: currentView === "income" ? "#87CEEB" : "white",
+            color: currentView === "income" ? "white" : "#87CEEB",
+            border: "none",
+            borderRadius: "20px",
+            padding: "10px 20px",
+            margin: "5px",
+            cursor: "pointer",
+            outline: "none",
+            boxShadow: "0px 2px 5px rgba(0,0,0,0.1)"
+            }}
+        >
+            수입
+        </button>
+        </div>
 
     {currentView === "expense" && (
       <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg p-4 md:p-6 mb-6 md:mb-10">

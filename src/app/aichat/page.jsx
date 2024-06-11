@@ -3,16 +3,22 @@ import React, { useState, useEffect, useRef } from "react";
 import styles from "../styles/aichat.module.css";
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { useSession } from 'next-auth/react'; // NextAuth의 useSession 훅 임포트
 
 export default function AiChat() {
   const router = useRouter();
+  const { data: session, status } = useSession(); // 세션 데이터와 상태를 가져옴
   const [message, setMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [chatHistory, setChatHistory] = useState([
-    { role: "system", content: "안녕하세요. 무엇을 도와드릴까요?" },
-  ]);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태 추가
+  const [totalPages, setTotalPages] = useState(1); // 총 페이지 수 상태 추가
   const chatContainerRef = useRef(null);
   
+  // 상태 관리를 위한 추가적인 useState 호출
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+    
   
 
   const api = axios.create({
@@ -24,6 +30,33 @@ export default function AiChat() {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatHistory]);
+
+  useEffect(() => {
+    // 로그인 상태 확인
+    if (status === 'authenticated' && session?.user?.email) {
+      // 사용자별 채팅 내역 불러오기
+      fetchChatHistory(session.user.email, currentPage);
+    }
+  }, [session, status, currentPage]);
+
+  const fetchChatHistory = async (userEmail, page) => {
+    setLoading(true); // 로딩 상태 시작
+    try {
+      const response = await axios.get(`http://localhost:5000/api/getChats?userEmail=${userEmail}&page=${page}`);
+      if (Array.isArray(response.data.chats)) {
+        setChatHistory(response.data.chats);
+        setTotalPages(response.data.totalPages); // 총 페이지 수 설정
+      } else {
+        console.error('응답 데이터의 "chats" 키가 배열이 아닙니다:', response.data.chats);
+        setError('채팅 데이터를 불러오는데 문제가 발생했습니다.'); // 사용자에게 에러 메시지 표시
+      }
+    } catch (error) {
+      console.error('채팅 기록을 가져오는데 실패했습니다:', error);
+      setError('채팅 기록을 가져오는데 실패했습니다.'); // 사용자에게 에러 메시지 표시
+    } finally {
+      setLoading(false); // 로딩 상태 종료
+    }
+  };
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -89,36 +122,19 @@ export default function AiChat() {
     await fetch("/api/generate?endpoint=reset", { method: "POST" });
   };
 
-  const fetchChatHistory = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/getChats');
-      if (Array.isArray(response.data.chats)) {
-        setChatHistory(prevChatHistory => [
-          ...prevChatHistory,
-          ...response.data.chats
-        ]);
-      } else {
-        console.error('응답 데이터의 "chats" 키가 배열이 아닙니다:', response.data.chats);
-      }
-    } catch (error) {
-      console.error('채팅 기록을 가져오는데 실패했습니다:', error);
-    }
-  };
-
-  // page.jsx 내에서 fetchChatHistory 함수
-  useEffect(() => {
-    fetchChatHistory();
-  }, []);
-
   const saveChat = async () => {
-    try {
-      const filteredChatHistory = chatHistory.filter(msg => !msg.chatHistory);
-      await api.post('/saveChat', { chatHistory: filteredChatHistory });
-      alert("채팅이 저장되었습니다.");
-      //fetchChatHistory();
-    } catch (error) {
-      console.error("채팅 저장 중 오류 발생:", error);
-      alert("채팅 저장에 실패했습니다.");
+    if (status === 'authenticated' && session?.user?.email) {
+      try {
+        const filteredChatHistory = chatHistory.filter(msg => !msg.chatHistory);
+        await api.post('/saveChat', {
+          userEmail: session.user.email,
+          chatHistory: filteredChatHistory
+        });
+        alert("채팅이 저장되었습니다.");
+      } catch (error) {
+        console.error("채팅 저장 중 오류 발생:", error);
+        alert("채팅 저장에 실패했습니다.");
+      }
     }
   };
 
@@ -127,6 +143,14 @@ export default function AiChat() {
     if (!message.trim()) return;
     sendMessage(message.trim());
     setMessage("");
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage(currentPage > 1 ? currentPage - 1 : 1);
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(currentPage + 1); // 여기서는 최대 페이지 수를 체크하지 않습니다. 서버에서 빈 배열을 반환할 수 있습니다.
   };
 
   return (
@@ -178,18 +202,28 @@ export default function AiChat() {
           <div className={styles.modalContent}>
             <span className={styles.closeButton} onClick={toggleModal}>&times;</span>
             <h2 className={styles.modalTitle}>채팅 내역</h2>
-            {chatHistory.map((msg, index) => (
-              <div key={index} className={styles.chatMessage}>
-                {msg.chatHistory && Array.isArray(msg.chatHistory) && msg.chatHistory.map((message, idx) => (
-                  <p key={idx} className={styles.messageContent}>
-                    <strong>{message.role === 'user' ? '사용자' : '어시스턴트'}:</strong> {message.content}
-                  </p>
-                ))}
-              </div>
-            ))}
+            {chatHistory.length > 0 ? (
+              chatHistory.map((chat, index) => (
+                <div key={index} className={styles.chatMessage}>
+                  {chat.chatHistory.map((msg, msgIndex) => (
+                    <div key={msgIndex}>
+                      <strong>{msg.role === 'user' ? '사용자' : '어시스턴트'}:</strong> {msg.content}
+                    </div>
+                  ))}
+                </div>
+              ))
+            ) : (
+              <p>채팅 내역이 없습니다.</p>
+            )}
+            <div className={styles.pagination}>
+              <button onClick={handlePrevPage} disabled={currentPage === 1}>이전</button>
+              <button onClick={handleNextPage}>다음</button>
+            </div>
           </div>
         </div>
       )}
     </main>
   );
 }
+
+
