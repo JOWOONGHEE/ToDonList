@@ -14,22 +14,26 @@ export default function AccountBook() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionType, setTransactionType] = useState("");
   const [currentView, setCurrentView] = useState("expense"); // 초기값을 "expense"로 설정
-  const { data: sessionData } = useSession();
+  const { data: sessionData, status } = useSession();
+  const [dataLoaded, setDataLoaded] = useState(false); // 데이터 로드 상태 추가
+  const [showExpenses, setShowExpenses] = useState(true);
+  const [showIncomes, setShowIncomes] = useState(true);
 
  // 세션 데이터가 변경될 때 로컬 스토리지에서 데이터 로드
  useEffect(() => {
     console.log("세션 데이터:", sessionData);
-    if (sessionData && sessionData.user && sessionData.user.email) {
+    if (status === 'authenticated' && sessionData && sessionData.user && sessionData.user.email) {
         const userEmail = sessionData.user.email;
         console.log("세션 데이터 있음:", userEmail);
         const savedExpenses = localStorage.getItem(`expenses_${userEmail}`);
         const savedIncomes = localStorage.getItem(`incomes_${userEmail}`);
         if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
         if (savedIncomes) setIncomes(JSON.parse(savedIncomes));
+        setDataLoaded(true); // 데이터 로드 완료
     } else {
         console.log("세션 데이터 또는 이메일이 없음");
     }
-}, [sessionData]);
+}, [sessionData, status]); // status가 변경될 때마다 실행
 
 // expenses 또는 incomes가 변경될 때 로컬 스토리지에 저장
 useEffect(() => {
@@ -45,6 +49,7 @@ useEffect(() => {
     }
 }, [expenses, incomes, sessionData]);
 
+  
 
   useEffect(() => {
     updateCharts();
@@ -62,81 +67,80 @@ useEffect(() => {
   };
 
   const addTransaction = (type) => {
-    const amountInput = document.getElementById(
-      `amount${type.charAt(0).toUpperCase() + type.slice(1)}`
-    ).value;
-    const categoryInput = document.getElementById(
-      `category${type.charAt(0).toUpperCase() + type.slice(1)}`
-    ).value;
-    const memoInput = document.getElementById(
-      `memo${type.charAt(0).toUpperCase() + type.slice(1)}`
-    ).value;
+    const amountInput = document.getElementById(`amount${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
+    const categoryInput = document.getElementById(`category${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
+    const memoInput = document.getElementById(`memo${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
     const amount = amountInput;
     const category = categoryInput;
     const memo = memoInput;
     const time = new Date();
-
+  
     if (!amount || !category) {
       alert("금액과 카테고리를 입력해주세요.");
       return;
     }
-
-    const formattedTime = time.toLocaleTimeString("ko-KR", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    });
-
+  
     const transactionId = time.getTime();
-    const newRow = document.createElement("tr");
-    newRow.setAttribute("data-id", transactionId);
-    newRow.innerHTML = `
-      <td class="text-center">${formattedTime}</td>
-      <td class="text-center">${amount}원</td>
-      <td class="text-center">${category}</td>
-      <td class="text-center">${memo}</td>
-      <td class="text-center"><button class="delete-btn" data-type="${type}" data-id="${transactionId}">삭제</button></td>
-    `;
-
+    const newTransaction = {
+      time: time,
+      amount: amount,
+      category: category,
+      memo: memo,
+      id: transactionId,
+    };
+  
     if (type === "expense") {
-      document.getElementById("expenseList").appendChild(newRow);
       setExpenses((prevExpenses) => {
-        const newExpenses = [
-          ...prevExpenses,
-          {
-            time: time,
-            amount: amountInput,
-            category: categoryInput,
-            memo: memoInput,
-            id: transactionId,
-          },
-        ];
+        const newExpenses = [...prevExpenses, newTransaction];
+        newExpenses.sort((a, b) => a.time - b.time); // 시간순으로 정렬
         updateSummary(newExpenses, incomes);
         return newExpenses;
       });
     } else if (type === "income") {
-      document.getElementById("incomeList").appendChild(newRow);
       setIncomes((prevIncomes) => {
-        const newIncomes = [
-          ...prevIncomes,
-          {
-            time: time,
-            amount: amountInput,
-            category: categoryInput,
-            memo: memoInput,
-            id: transactionId,
-          },
-        ];
+        const newIncomes = [...prevIncomes, newTransaction];
+        newIncomes.sort((a, b) => a.time - b.time); // 시간순으로 정렬
         updateSummary(expenses, newIncomes);
         return newIncomes;
       });
     }
-
+    updateList(type); // 리스트를 업데이트하는 함수 호출
     setIsModalOpen(false);
-    updateCharts();
-    updateTopExpenseCategory();
+    filterTransactions(type);
   };
+  
+  useEffect(() => {
+    // currentView가 변경될 때마다 리스트 업데이트
+    if (currentView === "expense") {
+      updateList('expense', expenses);
+    } else {
+      updateList('income', incomes);
+    }
+  }, [currentView, expenses, incomes]); // currentView, expenses, incomes가 변경될 때마다 실행
+
+
+  const updateList = (type, list = []) => {
+    const listElement = document.getElementById(`${type}List`);
+    if (!listElement) {
+      console.error(`${type}List element not found`);
+      return;
+    }
+    listElement.innerHTML = '';
+
+    list.forEach(item => {
+      const newRow = document.createElement("tr");
+      newRow.innerHTML = `
+        <td>${new Date(item.time).toLocaleTimeString()}</td>
+        <td>${item.amount}원</td>
+        <td>${item.category}</td>
+        <td>${item.memo}</td>
+      `;
+      listElement.appendChild(newRow);
+    });
+
+    // 삭제 버튼 이벤트 리스너 등록
+    registerDeleteButtonEventListeners();
+};
 
   useEffect(() => {
     const deleteButtons = document.querySelectorAll(".delete-btn");
@@ -172,7 +176,7 @@ useEffect(() => {
         const updatedExpenses = prevExpenses.filter(
           (expense) => expense.id !== transactionId
         );
-        updateSummary();
+        updateSummary(updatedExpenses, incomes);
         updateCharts();
         updateTopExpenseCategory();
         return updatedExpenses;
@@ -182,11 +186,14 @@ useEffect(() => {
         const updatedIncomes = prevIncomes.filter(
           (income) => income.id !== transactionId
         );
-        updateSummary();
+        updateSummary(expenses, updatedIncomes);
         updateCharts();
         return updatedIncomes;
       });
     }
+    
+    filterTransactions(type);
+    updateCharts();
   };
 
   const filterTransactions = (type) => {
@@ -214,25 +221,7 @@ useEffect(() => {
       sortedList.sort((a, b) => a.category.localeCompare(b.category));
     }
 
-    sortedList.forEach((item) => {
-      const newRow = document.createElement("tr");
-      const time = new Date(item.time);
-      console.log(time.toLocaleTimeString()); // 이제 정상적으로 작동해야 함
-      const formattedTime = time.toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-      });
-      newRow.innerHTML = `
-        <td class="text-center">${formattedTime}</td>
-        <td class="text-center">${item.amount}원</td>
-        <td class="text-center">${item.category}</td>
-        <td class="text-center">${item.memo}</td>
-        <td class="text-center"><button class="delete-btn" data-type="${type}" data-id="${item.id}">삭제</button></td>
-      `;
-      listElement.appendChild(newRow);
-    });
+    updateList(type, sortedList);
 
     updateSummary();
     updateCharts();
@@ -397,6 +386,32 @@ useEffect(() => {
   const formatAmount = (amount) => {
     return amount.toLocaleString();
   };
+  
+
+  useEffect(() => {
+    if (showExpenses) {
+      updateList('expense', expenses);
+    }
+  }, [showExpenses, expenses]);
+
+  useEffect(() => {
+    if (showIncomes) {
+      updateList('income', incomes);
+    }
+  }, [showIncomes, incomes]);
+  
+  const toggleExpensesVisibility = () => {
+    setShowExpenses(prevShowExpenses => !prevShowExpenses);
+  };
+
+  const toggleIncomesVisibility = () => {
+    setShowIncomes(prevShowIncomes => !prevShowIncomes);
+  };
+
+  // 데이터가 로드되지 않았다면 로딩 인디케이터 표시
+  if (!dataLoaded) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-custom-green-light flex flex-col items-center p-4 md:p-8">
@@ -465,7 +480,32 @@ useEffect(() => {
             <div id="totalExpense" className="text-xl md:text-2xl font-bold">0원</div>
           </div>
         </div>
-        <div id="expenseList">지출 내역</div>
+        <div className="flex justify-between items-center mb-4">
+        <button
+            onClick={toggleExpensesVisibility}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          >
+            {showExpenses ? "내역 숨기기" : "내역 보기"}
+          </button>
+        </div>
+          {showExpenses && (
+          <div>
+            {/* 지출 목록 테이블 */}
+            <table id="expenseTable">
+              <thead>
+                <tr>
+                  <th>시간</th>
+                  <th>금액</th>
+                  <th>카테고리</th>
+                  <th>메모</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="expenseList">
+              </tbody>
+            </table>
+          </div>
+        )}
         <canvas id="expenseChart"></canvas>
       </div>
     )}
@@ -499,7 +539,32 @@ useEffect(() => {
             <div id="totalIncome" className="text-xl md:text-2xl font-bold">0원</div>
           </div>
         </div>
-        <div id="incomeList">수입 내역</div>
+        <div className="flex justify-between items-center mb-4">
+        <button
+            onClick={toggleIncomesVisibility}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          >
+           {showIncomes ? "내역 숨기기" : "내역 보기"}
+          </button>
+        </div>
+          { showIncomes && (
+          <div>
+            {/* 지출 목록 테이블 */}
+            <table id="incomeTable">
+              <thead>
+                <tr>
+                  <th>시간</th>
+                  <th>금액</th>
+                  <th>카테고리</th>
+                  <th>메모</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="incomeList">
+              </tbody>
+            </table>
+          </div>
+        )}
         <canvas id="incomeChart"></canvas>
       </div>
     )}
