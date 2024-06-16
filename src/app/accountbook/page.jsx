@@ -70,44 +70,63 @@ useEffect(() => {
     const amountInput = document.getElementById(`amount${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
     const categoryInput = document.getElementById(`category${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
     const memoInput = document.getElementById(`memo${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
-    const amount = amountInput;
+    const timeInput = document.getElementById(`time${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
+    const amount = parseFloat(amountInput);
     const category = categoryInput;
     const memo = memoInput;
-    const time = new Date();
-  
+    const time = timeInput ? new Date(timeInput) : new Date();
+
     if (!amount || !category) {
       alert("금액과 카테고리를 입력해주세요.");
       return;
     }
-  
-    const transactionId = time.getTime();
-    const newTransaction = {
-      time: time,
-      amount: amount,
-      category: category,
-      memo: memo,
-      id: transactionId,
-    };
-  
-    if (type === "expense") {
-      setExpenses((prevExpenses) => {
-        const newExpenses = [...prevExpenses, newTransaction];
-        newExpenses.sort((a, b) => a.time - b.time); // 시간순으로 정렬
-        updateSummary(newExpenses, incomes);
-        return newExpenses;
-      });
-    } else if (type === "income") {
-      setIncomes((prevIncomes) => {
-        const newIncomes = [...prevIncomes, newTransaction];
-        newIncomes.sort((a, b) => a.time - b.time); // 시간순으로 정렬
-        updateSummary(expenses, newIncomes);
-        return newIncomes;
-      });
+
+    const transactionId = new Date().getTime(); // 고유 ID를 현재 시간으로 생성
+    const transactions = type === "expense" ? expenses : incomes;
+
+    let existingTransactionIndex = transactions.findIndex(transaction => transaction.category === category);
+
+    if (existingTransactionIndex !== -1) {
+      const updatedAmount = parseFloat(transactions[existingTransactionIndex].amount.replace(/\D/g, "")) + amount;
+      const updatedCount = transactions[existingTransactionIndex].count + 1;
+
+      transactions[existingTransactionIndex] = {
+        ...transactions[existingTransactionIndex],
+        amount: `${updatedAmount}원`,
+        count: updatedCount,
+        time: time.toISOString().split('T')[0], // 날짜만 저장
+        memo: memo
+      };
+
+      if (type === "expense") {
+        setExpenses([...transactions]);
+      } else {
+        setIncomes([...transactions]);
+      }
+    } else {
+      const newTransaction = {
+        id: transactionId,
+        time: time.toISOString().split('T')[0], // 날짜만 저장
+        amount: `${amount}원`,
+        category: category,
+        memo: memo,
+        count: 1
+      };
+
+      if (type === "expense") {
+        setExpenses([...expenses, newTransaction]);
+      } else {
+        setIncomes([...incomes, newTransaction]);
+      }
     }
-    updateList(type); // 리스트를 업데이트하는 함수 호출
+
+    // updateList 함수를 호출하여 목록을 업데이트
+    updateList(type, type === "expense" ? expenses : incomes);
+
+    updateCharts();
+    updateTopExpenseCategory();
     setIsModalOpen(false);
-    filterTransactions(type);
-  };
+};
   
   useEffect(() => {
     // currentView가 변경될 때마다 리스트 업데이트
@@ -129,11 +148,15 @@ useEffect(() => {
 
     list.forEach(item => {
       const newRow = document.createElement("tr");
+      const time = new Date(item.time);
+      const formattedTime = time instanceof Date && !isNaN(time) ? time.toLocaleDateString("ko-KR") : 'Invalid Date';
+
       newRow.innerHTML = `
-        <td>${new Date(item.time).toLocaleTimeString()}</td>
-        <td>${item.amount}원</td>
-        <td>${item.category}</td>
-        <td>${item.memo}</td>
+        <td class="text-center">${formattedTime}</td>
+        <td class="text-center">${item.amount} (${item.count}건)</td>
+        <td class="text-center">${item.category}</td>
+        <td class="text-center">${item.memo}</td>
+        <td class="text-center"><button class="delete-btn" data-type="${type}" data-id="${item.id}">삭제</button></td>
       `;
       listElement.appendChild(newRow);
     });
@@ -216,7 +239,7 @@ useEffect(() => {
           parseFloat(b.amount.replace(/\D/g, ""))
       );
     } else if (filter === "time") {
-      sortedList.sort((a, b) => a.time - b.time);
+      sortedList.sort((a, b) => new Date(a.time) - new Date(b.time));
     } else if (filter === "category") {
       sortedList.sort((a, b) => a.category.localeCompare(b.category));
     }
@@ -490,21 +513,22 @@ useEffect(() => {
         </div>
           {showExpenses && (
           <div>
-            {/* 지출 목록 테이블 */}
-            <table id="expenseTable">
-              <thead>
-                <tr>
-                  <th>시간</th>
-                  <th>금액</th>
-                  <th>카테고리</th>
-                  <th>메모</th>
-                  <th>작업</th>
-                </tr>
-              </thead>
-              <tbody id="expenseList">
-              </tbody>
-            </table>
+          <div className="text-center mb-4">
+          <h3 className="text-md md:text-lg font-semibold">가장 많은 지출: {topExpenseCategory}</h3>
           </div>
+          <table className="w-full mt-2 border-collapse rounded-lg overflow-hidden shadow-lg">
+            <thead>
+              <tr className="bg-gray-200 text-gray-700">
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">시간</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">금액</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">카테고리</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">메모</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">삭제</th>
+              </tr>
+            </thead>
+          <tbody id="expenseList" className="bg-white"></tbody>
+        </table>
+        </div>
         )}
         <canvas id="expenseChart"></canvas>
       </div>
@@ -549,18 +573,20 @@ useEffect(() => {
         </div>
           { showIncomes && (
           <div>
-            {/* 지출 목록 테이블 */}
-            <table id="incomeTable">
-              <thead>
-                <tr>
-                  <th>시간</th>
-                  <th>금액</th>
-                  <th>카테고리</th>
-                  <th>메모</th>
-                  <th>작업</th>
-                </tr>
-              </thead>
-              <tbody id="incomeList">
+            <div className="text-center mb-4">
+          <h3 className="text-md md:text-lg font-semibold">가장 많은 지출: {topExpenseCategory}</h3>
+          </div>
+          <table className="w-full mt-2 border-collapse rounded-lg overflow-hidden shadow-lg">
+            <thead>
+              <tr className="bg-gray-200 text-gray-700">
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">시간</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">금액</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">카테고리</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">메모</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">삭제</th>
+              </tr>
+            </thead>
+              <tbody id="incomeList" className="bg-white">
               </tbody>
             </table>
           </div>
@@ -570,65 +596,69 @@ useEffect(() => {
     )}
 
 
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-11/12 sm:w-2/3 md:w-1/2 lg:w-2/5 xl:w-1/3 mx-auto">
-            <h2 className="text-lg sm:text-xl mb-4">{transactionType === "expense" ? "지출 추가" : "수입 추가"}</h2>
-            <label className="block mb-2">
-              금액:
-              <input type="text" id={`amount${transactionType.charAt(0).toUpperCase() + transactionType.slice(1)}`} className="border border-gray-400 rounded-md p-2 w-full" />
-            </label>
-            <label className="block mb-2">
-              카테고리:
-              <select id={`category${transactionType.charAt(0).toUpperCase() + transactionType.slice(1)}`} className="border border-gray-400 rounded-md p-2 w-full">
-                <option value="">카테고리 선택</option>
-                {transactionType === "expense" ? (
-                  <>
-                    <option value="식비">식비</option>
-                    <option value="교통비">교통비</option>
-                    <option value="생필품">생필품</option>
-                    <option value="의류">의류</option>
-                    <option value="교육">교육</option>
-                    <option value="의료 / 건강">의료 / 건강</option>
-                    <option value="문화생활">문화생활</option>
-                    <option value="미용">미용</option>
-                    <option value="저축">저축</option>
-                    <option value="공과금">공과금</option>
-                    <option value="경조사">경조사</option>
-                    <option value="기타">기타</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="월급">월급</option>
-                    <option value="부수입">부수입</option>
-                    <option value="용돈">용돈</option>
-                    <option value="보너스">보너스</option>
-                    <option value="기타">기타</option>
-                  </>
-                )}
-              </select>
-            </label>
-            <label className="block mb-4">
-              메모:
-              <input type="text" id={`memo${transactionType.charAt(0).toUpperCase() + transactionType.slice(1)}`} className="border border-gray-400 rounded-md p-2 w-full" />
-            </label>
-            <div className="text-right">
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2"
-                onClick={() => addTransaction(transactionType)}
-              >
-                {transactionType === "expense" ? "지출 추가" : "수입 추가"}
-              </button>
-              <button
-                className="bg-gray-300 px-4 py-2 rounded-md"
-                onClick={() => setIsModalOpen(false)}
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
-     )}
+{isModalOpen && (
+  <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-11/12 sm:w-2/3 md:w-1/2 lg:w-2/5 xl:w-1/3 mx-auto">
+      <h2 className="text-lg sm:text-xl mb-4">{transactionType === "expense" ? "지출 추가" : "수입 추가"}</h2>
+      <label className="block mb-2">
+        금액:
+        <input type="text" id={`amount${transactionType.charAt(0).toUpperCase() + transactionType.slice(1)}`} className="border border-gray-400 rounded-md p-2 w-full" />
+      </label>
+      <label className="block mb-2">
+        카테고리:
+        <select id={`category${transactionType.charAt(0).toUpperCase() + transactionType.slice(1)}`} className="border border-gray-400 rounded-md p-2 w-full">
+          <option value="">카테고리 선택</option>
+          {transactionType === "expense" ? (
+            <>
+              <option value="식비">식비</option>
+              <option value="교통비">교통비</option>
+              <option value="생필품">생필품</option>
+              <option value="의류">의류</option>
+              <option value="교육">교육</option>
+              <option value="의료 / 건강">의료 / 건강</option>
+              <option value="문화생활">문화생활</option>
+              <option value="미용">미용</option>
+              <option value="저축">저축</option>
+              <option value="공과금">공과금</option>
+              <option value="경조사">경조사</option>
+              <option value="기타">기타</option>
+            </>
+          ) : (
+            <>
+              <option value="월급">월급</option>
+              <option value="부수입">부수입</option>
+              <option value="용돈">용돈</option>
+              <option value="보너스">보너스</option>
+              <option value="기타">기타</option>
+            </>
+          )}
+        </select>
+      </label>
+      <label className="block mb-2">
+        날짜:
+        <input type="date" id={`time${transactionType.charAt(0).toUpperCase() + transactionType.slice(1)}`} className="border border-gray-400 rounded-md p-2 w-full" />
+      </label>
+      <label className="block mb-4">
+        메모:
+        <input type="text" id={`memo${transactionType.charAt(0).toUpperCase() + transactionType.slice(1)}`} className="border border-gray-400 rounded-md p-2 w-full" />
+      </label>
+      <div className="text-right">
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2"
+          onClick={() => addTransaction(transactionType)}
+        >
+          {transactionType === "expense" ? "지출 추가" : "수입 추가"}
+        </button>
+        <button
+          className="bg-gray-300 px-4 py-2 rounded-md"
+          onClick={() => setIsModalOpen(false)}
+        >
+          취소
+        </button>
+      </div>
+    </div>
+  </div>
+)}
      </div>
    );
  }

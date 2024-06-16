@@ -193,37 +193,37 @@ export default function Main() {
 
   const handleDateSelect = async (selectInfo) => {
     const selectedStart = new Date(selectInfo.startStr);
-    const selectedEnd = new Date(selectInfo.end);
-
+    const selectedEnd = new Date(selectInfo.endStr);
+  
     const foundEvents = events.filter(event => {
-      const eventStart = new Date(event.start);
-      const eventEnd = new Date(event.end);
-
-      // 하루짜리 이벤트를 정확히 동일한 날짜 비교
+      const eventStart = event.start instanceof Date ? event.start : new Date(event.start);
+      const eventEnd = event.end instanceof Date ? event.end : new Date(event.end);
+  
+      // 하루짜리 이벤트를 동일한 날짜 비교
       if (eventStart.toISOString().split("T")[0] === eventEnd.toISOString().split("T")[0]) {
         return eventStart.toISOString().split("T")[0] === selectedStart.toISOString().split("T")[0];
       }
-
+  
       return (
         (eventStart <= selectedEnd && eventEnd > selectedStart) ||
         (eventStart >= selectedStart && eventStart < selectedEnd)
       );
     });
-
+  
     setSelectedDateEvents(foundEvents);
     setSelectedDate(selectInfo.startStr);
-
+  
     if (foundEvents.length > 0) {
       const eventDetails = foundEvents.map((event, index) => {
         let showEndDate = new Date(event.end);
         showEndDate.setDate(showEndDate.getDate() - 1);
         showEndDate = showEndDate.toISOString().split("T")[0];
-
+  
         return `<div class="clickable-event" data-event-index="${index}">
-                  일정명: ${event.title || event.extendedProps.schedule}, 시작: ${event.start.toISOString().split("T")[0]}, 종료: ${showEndDate}
+                  일정명: ${event.title || event.extendedProps.schedule}, 시작: ${eventStart.toISOString().split("T")[0]}, 종료: ${showEndDate}
                 </div>`;
       }).join("<br>");
-
+  
       const result = await Swal.fire({
         title: '찾은 일정',
         html: `${eventDetails}
@@ -270,7 +270,7 @@ export default function Main() {
           });
         }
       });
-
+  
       if (result.isConfirmed) {
         let calendarApi = selectInfo.view.calendar;
         calendarApi.unselect(); // clear date selection
@@ -305,7 +305,7 @@ export default function Main() {
           return { title: title, schedule: schedule };
         }
       });
-
+  
       if (result.isConfirmed) {
         let calendarApi = selectInfo.view.calendar;
         calendarApi.unselect(); // clear date selection
@@ -325,7 +325,6 @@ export default function Main() {
       }
     }
   };
-
   // if (window.navigator.userAgent.includes('Emulation')) {
   //   // 에뮬레이션 모드일 때 실행할 코드
   //   document.addEventListener('click', handleEventClick);

@@ -12,6 +12,9 @@ export default function AccountBook() {
   const [topExpenseCategory, setTopExpenseCategory] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionType, setTransactionType] = useState("");
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedTransactions, setSelectedTransactions] = useState([]);
 
   useEffect(() => {
     updateCharts();
@@ -29,81 +32,134 @@ export default function AccountBook() {
   };
 
   const addTransaction = (type) => {
-    const amountInput = document.getElementById(
-      `amount${type.charAt(0).toUpperCase() + type.slice(1)}`
-    ).value;
-    const categoryInput = document.getElementById(
-      `category${type.charAt(0).toUpperCase() + type.slice(1)}`
-    ).value;
-    const memoInput = document.getElementById(
-      `memo${type.charAt(0).toUpperCase() + type.slice(1)}`
-    ).value;
-    const amount = amountInput;
+    const amountInput = document.getElementById(`amount${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
+    const categoryInput = document.getElementById(`category${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
+    const memoInput = document.getElementById(`memo${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
+    const amount = parseFloat(amountInput); // 금액을 숫자로 변환
     const category = categoryInput;
     const memo = memoInput;
     const time = new Date();
-
+  
     if (!amount || !category) {
       alert("금액과 카테고리를 입력해주세요.");
       return;
     }
-
+  
     const formattedTime = time.toLocaleTimeString("ko-KR", {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
       hour12: true,
     });
-
+  
     const transactionId = time.getTime();
+  
+    // 동일한 카테고리를 가진 기존 거래를 찾기
+    let existingTransactionIndex = -1;
+    if (type === "expense") {
+      expenses.forEach((expense, index) => {
+        if (expense.category === categoryInput) {
+          existingTransactionIndex = index;
+        }
+      });
+    } else {
+      incomes.forEach((income, index) => {
+        if (income.category === categoryInput) {
+          existingTransactionIndex = index;
+        }
+      });
+    }
+  
+    if (existingTransactionIndex !== -1) {
+      if (type === "expense") {
+        const updatedAmount = parseFloat(expenses[existingTransactionIndex].amount.replace(/\D/g, "")) + amount;
+        const updatedCount = expenses[existingTransactionIndex].count + 1;
+        const updatedExpenses = [...expenses];
+        updatedExpenses[existingTransactionIndex] = {
+          ...updatedExpenses[existingTransactionIndex],
+          amount: `${updatedAmount}원`,
+          count: updatedCount,
+          time: formattedTime,
+        };
+        setExpenses(updatedExpenses);
+  
+        // UI 업데이트
+        const existingRow = document.querySelector(`#expenseList tr[data-id="${updatedExpenses[existingTransactionIndex].id}"]`);
+        if (existingRow) {
+          existingRow.innerHTML = `
+            <td class="text-center">${formattedTime}</td>
+            <td class="text-center">${updatedAmount}원 (${updatedCount}건)</td>
+            <td class="text-center">${categoryInput}</td>
+            <td class="text-center">${memoInput}</td>
+            <td class="text-center"><button class="delete-btn" data-type="${type}" data-id="${updatedExpenses[existingTransactionIndex].id}">삭제</button></td>
+          `;
+        }
+      } else {
+        const updatedAmount = parseFloat(incomes[existingTransactionIndex].amount.replace(/\D/g, "")) + amount;
+        const updatedCount = incomes[existingTransactionIndex].count + 1;
+        const updatedIncomes = [...incomes];
+        updatedIncomes[existingTransactionIndex] = {
+          ...updatedIncomes[existingTransactionIndex],
+          amount: `${updatedAmount}원`,
+          count: updatedCount,
+          time: formattedTime,
+        };
+        setIncomes(updatedIncomes);
+  
+        // UI 업데이트
+        const existingRow = document.querySelector(`#incomeList tr[data-id="${updatedIncomes[existingTransactionIndex].id}"]`);
+        if (existingRow) {
+          existingRow.innerHTML = `
+            <td class="text-center">${formattedTime}</td>
+            <td class="text-center">${updatedAmount}원 (${updatedCount}건)</td>
+            <td class="text-center">${categoryInput}</td>
+            <td class="text-center">${memoInput}</td>
+            <td class="text-center"><button class="delete-btn" data-type="${type}" data-id="${updatedIncomes[existingTransactionIndex].id}">삭제</button></td>
+          `;
+        }
+      }
+  
+      // 차트와 요약 업데이트
+      updateCharts();
+      updateTopExpenseCategory();
+      setIsModalOpen(false);
+      return;
+    }
+  
+    // 새로운 거래 항목을 생성
     const newRow = document.createElement("tr");
     newRow.setAttribute("data-id", transactionId);
     newRow.innerHTML = `
       <td class="text-center">${formattedTime}</td>
-      <td class="text-center">${amount}원</td>
-      <td class="text-center">${category}</td>
-      <td class="text-center">${memo}</td>
+      <td class="text-center">${amount}원 (1건)</td>
+      <td class="text-center">${categoryInput}</td>
+      <td class="text-center">${memoInput}</td>
       <td class="text-center"><button class="delete-btn" data-type="${type}" data-id="${transactionId}">삭제</button></td>
     `;
+    
+    const newTransaction = {
+      id: Math.random().toString(36).substr(2, 9), // 임의의 ID 생성
+      time: new Date().toLocaleString(), // 현재 시간
+      amount: amountInput.value,
+      category: categoryInput.value,
+      memo: memoInput.value,
+    };
+
+    // 내역에 새로운 거래 항목을 추가
+    const listElement = document.getElementById(`${type}List`);
+    listElement.appendChild(newRow);
 
     if (type === "expense") {
-      document.getElementById("expenseList").appendChild(newRow);
-      setExpenses((prevExpenses) => {
-        const newExpenses = [
-          ...prevExpenses,
-          {
-            time: time,
-            amount: amountInput,
-            category: categoryInput,
-            memo: memoInput,
-            id: transactionId,
-          },
-        ];
-        updateSummary(newExpenses, incomes);
-        return newExpenses;
-      });
-    } else if (type === "income") {
-      document.getElementById("incomeList").appendChild(newRow);
-      setIncomes((prevIncomes) => {
-        const newIncomes = [
-          ...prevIncomes,
-          {
-            time: time,
-            amount: amountInput,
-            category: categoryInput,
-            memo: memoInput,
-            id: transactionId,
-          },
-        ];
-        updateSummary(expenses, newIncomes);
-        return newIncomes;
-      });
+      setExpenses([...expenses, { id: transactionId, amount: `${amount}원`, category: categoryInput, memo: memoInput, time: formattedTime, count: 1 }]);
+    } else {
+      setIncomes([...incomes, { id: transactionId, amount: `${amount}원`, category: categoryInput, memo: memoInput, time: formattedTime, count: 1 }]);
     }
 
-    setIsModalOpen(false);
     updateCharts();
     updateTopExpenseCategory();
+    setIsModalOpen(false);
   };
+  
 
   useEffect(() => {
     const deleteButtons = document.querySelectorAll(".delete-btn");
@@ -128,33 +184,50 @@ export default function AccountBook() {
   const deleteTransaction = (button, type, transactionId) => {
     const row = button.closest("tr");
     if (!row) {
-      console.error("Delete button clicked, but corresponding row not found.");
-      return;
+        console.error("Delete button clicked, but corresponding row not found.");
+        return;
     }
 
     row.parentNode.removeChild(row);
 
     if (type === "expense") {
-      setExpenses((prevExpenses) => {
-        const updatedExpenses = prevExpenses.filter(
-          (expense) => expense.id !== transactionId
-        );
-        updateSummary();
-        updateCharts();
-        updateTopExpenseCategory();
-        return updatedExpenses;
+      setExpenses(prevExpenses => {
+          const updatedExpenses = prevExpenses.filter(expense => expense.id !== transactionId);
+          updateSummary(updatedExpenses, incomes);
+          return updatedExpenses;
       });
-    } else if (type === "income") {
-      setIncomes((prevIncomes) => {
-        const updatedIncomes = prevIncomes.filter(
-          (income) => income.id !== transactionId
-        );
-        updateSummary();
-        updateCharts();
-        return updatedIncomes;
+  } else if (type === "income") {
+      setIncomes(prevIncomes => {
+          const updatedIncomes = prevIncomes.filter(income => income.id !== transactionId);
+          updateSummary(expenses, updatedIncomes);
+          return updatedIncomes;
       });
-    }
-  };
+  }
+
+  updateCharts();
+  registerDeleteButtonEventListeners();
+};
+
+
+ // 자세히 보기 모달 열기
+ const openDetailsModal = (category) => {
+  setSelectedCategory(category);
+
+  let transactions;
+  if (transactionType === "expense") {
+    transactions = expenses.filter((expense) => expense.category === category);
+  } else {
+    transactions = incomes.filter((income) => income.category === category);
+  }
+
+  setSelectedTransactions(transactions);
+  setDetailsModalOpen(true);
+};
+
+// 자세히 보기 모달 닫기
+const closeDetailsModal = () => {
+  setDetailsModalOpen(false);
+};
 
   const filterTransactions = (type) => {
     const filter = document.getElementById(
@@ -183,26 +256,26 @@ export default function AccountBook() {
 
     sortedList.forEach((item) => {
       const newRow = document.createElement("tr");
-      const formattedTime = item.time.toLocaleTimeString("ko-KR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-      });
+      newRow.setAttribute("data-id", item.id);
       newRow.innerHTML = `
-        <td class="text-center">${formattedTime}</td>
-        <td class="text-center">${item.amount}원</td>
+        <td class="text-center">${item.time}</td>
+        <td class="text-center">${item.amount}원 (${item.count}건)</td>
         <td class="text-center">${item.category}</td>
         <td class="text-center">${item.memo}</td>
         <td class="text-center"><button class="delete-btn" data-type="${type}" data-id="${item.id}">삭제</button></td>
       `;
       listElement.appendChild(newRow);
-    });
+      });
+    };
 
-    updateSummary();
-    updateCharts();
-    registerDeleteButtonEventListeners();
-  };
+    const openModal = (type) => {
+      setTransactionType(type);
+      setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+      setIsModalOpen(false);
+    };
 
   const updateSummary = () => {
     const totalExpense = expenses.reduce(
@@ -218,7 +291,7 @@ export default function AccountBook() {
       formatAmount(totalExpense) + "원";
     document.getElementById("totalIncome").textContent =
       formatAmount(totalIncome) + "원";
-  };
+  };fetch
 
   const updateTopExpenseCategory = () => {
     const categoryTotals = expenses.reduce((acc, cur) => {
@@ -368,15 +441,6 @@ export default function AccountBook() {
         <div className="flex flex-col md:flex-row items-center justify-between mb-4">
           <div className="flex items-center mb-4 md:mb-0">
             <h2 className="text-lg md:text-xl font-semibold mr-2">지출 내역</h2>
-            <select
-              id="filterExpense"
-              onChange={() => filterTransactions("expense")}
-              className="border border-gray-400 rounded-md p-1 mr-2 text-sm md:text-base"
-            >
-              <option value="time">시간순</option>
-              <option value="money">금액순</option>
-              <option value="category">카테고리순</option>
-            </select>
             <button
               className="bg-blue-500 text-white px-2 md:px-4 py-1 md:py-2 rounded-md text-sm md:text-base"
               onClick={() => {
@@ -384,7 +448,7 @@ export default function AccountBook() {
                 setTransactionType("expense");
               }}
             >
-              추가
+                 지출 추가
             </button>
           </div>
 
@@ -394,11 +458,22 @@ export default function AccountBook() {
           </div>
         </div>
 
+        <div className="flex flex-col md:flex-row items-center justify-start mb-4">
+          <h3 className="text-md md:text-lg font-semibold mr-2"></h3>
+          <select
+            id="filterExpense"
+            onChange={() => filterTransactions("expense")}
+            className="border border-gray-400 rounded-md p-1 mr-2 text-sm md:text-base"
+          >
+            <option value="time">시간순</option>
+            <option value="money">금액순</option>
+            <option value="category">카테고리순</option>
+          </select>
+        </div>
 
         <div className="text-center mb-4">
           <h3 className="text-md md:text-lg font-semibold">{topExpenseCategory}에 많이 쓰는 중</h3>
         </div>
-
 
         <table className="w-full mt-2 border-collapse rounded-lg overflow-hidden shadow-lg">
           <thead>
@@ -418,6 +493,25 @@ export default function AccountBook() {
         <div className="flex flex-col md:flex-row items-center justify-between mb-4">
           <div className="flex items-center mb-4 md:mb-0">
             <h2 className="text-lg md:text-xl font-semibold mr-2">수입 내역</h2>
+            <button
+              className="bg-green-500 text-white px-2 md:px-4 py-1 md:py-2 rounded-md text-sm md:text-base"
+              onClick={() => {
+                setIsModalOpen(true);
+                setTransactionType("income");
+              }}
+             >
+                  수입 추가
+             </button>
+           </div>
+
+           <div className="text-center">
+              <h2 className="text-lg font-semibold">총 수입</h2>
+              <div id="totalIncome" className="text-xl md:text-2xl font-bold">0원</div>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center justify-start mb-4">
+            <h3 className="text-md md:text-lg font-semibold mr-2"></h3>
             <select
               id="filterIncome"
               onChange={() => filterTransactions("income")}
@@ -427,39 +521,22 @@ export default function AccountBook() {
               <option value="money">금액순</option>
               <option value="category">카테고리순</option>
             </select>
-            <button
-              className="bg-green-500 text-white px-2 md:px-4 py-1 md:py-2 rounded-md text-sm md:text-base"
-              onClick={() => {
-                setIsModalOpen(true);
-                setTransactionType("income");
-              }}
-            >
-              추가
-            </button>
           </div>
 
-          <div className="text-center">
-            <h2 className="text-lg font-semibold">총 수입</h2>
-            <div id="totalIncome" className="text-xl md:text-2xl font-bold">0원</div>
-          </div>
+          <table className="w-full mt-2 border-collapse rounded-lg overflow-hidden shadow-lg">
+            <thead>
+              <tr className="bg-gray-200 text-gray-700">
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">시간</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">금액</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">카테고리</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">메모</th>
+                <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">삭제</th>
+              </tr>
+            </thead>
+            <tbody id="incomeList" className="bg-white"></tbody>
+          </table>
         </div>
-
-        <table className="w-full mt-2 border-collapse rounded-lg overflow-hidden shadow-lg">
-          <thead>
-            <tr className="bg-gray-200 text-gray-700">
-              <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">시간</th>
-              <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">금액</th>
-              <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">카테고리</th>
-              <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">메모</th>
-              <th className="border border-gray-300 p-2 md:p-3 text-xs md:text-sm">삭제</th>
-            </tr>
-          </thead>
-          <tbody id="incomeList" className="bg-white"></tbody>
-        </table>
-      </div>
     
-
-
       <div className="flex flex-wrap justify-around mb-4 bg-white shadow-lg rounded-lg p-6">
         <div className="flex-1 min-w-0 max-w-full mx-10">
           <h2 className="text-base md:text-xl font-semibold">지출 차트</h2>
@@ -550,3 +627,16 @@ export default function AccountBook() {
      </div>
    );
  }
+
+ // 총 지출과 총 수입을 계산하는 함수
+export const calculateTotal = (transactions) => {
+  return transactions.reduce(
+    (acc, cur) => acc + parseFloat(cur.amount.replace(/\D/g, "")),
+    0
+  );
+};
+
+// 금액을 형식화하는 함수
+export const formatAmount = (amount) => {
+  return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
