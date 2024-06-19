@@ -13,14 +13,15 @@ const handler = async (req, res) => {
   if (req.method === 'POST') {
     let client;
     try {
-      const { userEmail, chatHistory, collection } = req.body;
-      if (!userEmail || !chatHistory || !collection) {
-        return res.status(400).json({ message: 'userEmail, chatHistory, and collection are required' });
+      const { userEmail, chatHistory } = req.body;
+      console.log("Received data:", { userEmail, chatHistory });
+      if (!userEmail || !chatHistory) {
+        return res.status(400).json({ message: 'userEmail and chatHistory are required' });
       }
 
       client = await connectToDatabase(process.env.MONGODB_URI);
       const db = client.db('forum');
-      const selectedCollection = db.collection(collection);
+      const selectedCollection = db.collection("chats");  // 'chats' 컬렉션을 직접 지정
 
       await selectedCollection.insertOne({
         userEmail,

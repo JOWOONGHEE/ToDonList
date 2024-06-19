@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from 'next-auth/react';
 import Chart from "chart.js/auto";
+import { getSession } from 'next-auth/react';
 import styles from "../styles/accountbook.module.css";
 
 let expensesChart;
@@ -21,7 +22,8 @@ export default function AccountBook() {
   const [dataLoaded, setDataLoaded] = useState(false); // 데이터 로드 상태 추가
   const [showExpenses, setShowExpenses] = useState(true);
   const [showIncomes, setShowIncomes] = useState(true);
-
+  
+  
  // 세션 데이터가 변경될 때 로컬 스토리지에서 데이터 로드
  useEffect(() => {
     console.log("세션 데이터:", sessionData);
@@ -586,7 +588,7 @@ useEffect(() => {
                 setTransactionType("expense");
               }}
             >
-              지출 추가
+              추가
             </button>
           </div>
           <div className="text-center">

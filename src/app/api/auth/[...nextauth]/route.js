@@ -62,7 +62,9 @@ export const authOptions =({
   callbacks: {
     async signIn({ user, account, profile, email, credentials, password }) {
       // SNS 로그인 처리
-      
+      if (account.provider === 'kakao') {
+        return true;  // 카카오 로그인 성공 후 메인 페이지로 리디렉션
+    }
       if (account && account.provider) {
         // SNS 제공자에 따른 추가적인 검증이 필요하다면 여기에 로직 추가
         console.log(account.provider);

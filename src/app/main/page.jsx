@@ -439,6 +439,29 @@ export default function Main() {
               }}
             />
           </div>
+          <div className={styles.eventDetails} style={{ maxHeight: '0px', overflowY: 'auto' }}>
+            <h2 className={styles.eventTitle}>선택한 날짜의 일정</h2>
+            {selectedDateEvents.length > 0 ? (
+              selectedDateEvents.map((event, index) => {
+                const startDate = new Date(event.start);
+                const endDate = new Date(event.end);
+                const isSingleDayEvent = startDate.toDateString() === endDate.toDateString();
+
+                return (
+                  <div key={index} className={styles.eventItem} onClick={() => handleEventItemClick(index)}>
+                    <h3>일정제목: {event.title || event.extendedProps.schedule} / 일정: {event.extendedProps.schedule}</h3>
+                    {isSingleDayEvent ? (
+                      <p>{formatDate(startDate)}</p>
+                    ) : (
+                      <p>{formatDate(startDate)} ~ {formatDate(new Date(endDate.setDate(endDate.getDate() - 1)))}</p>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <p>선택한 날짜에 일정이 없습니다.</p>
+            )}
+          </div>
           <div className={styles.buttonContainer}>
             <button className={`${styles.addButton} ${isBackgroundDimmed ? styles.brightButton : ''}`} onClick={toggleButtons}>+</button>
             <div className={`${styles.buttonGroup} ${showButtons ? styles.show : ''}`}>
@@ -462,29 +485,7 @@ export default function Main() {
               </div>
             </div>
           </div>
-      <div className={styles.eventDetails} style={{ maxHeight: '200px', overflowY: 'auto' }}>
-        <h2 className={styles.eventTitle}>선택한 날짜의 일정</h2>
-        {selectedDateEvents.length > 0 ? (
-          selectedDateEvents.map((event, index) => {
-            const startDate = new Date(event.start);
-            const endDate = new Date(event.end);
-            const isSingleDayEvent = startDate.toDateString() === endDate.toDateString();
-
-            return (
-              <div key={index} className={styles.eventItem} onClick={() => handleEventItemClick(index)}>
-                <h3>일정제목: {event.title || event.extendedProps.schedule} / 일정: {event.extendedProps.schedule}</h3>
-                {isSingleDayEvent ? (
-                  <p>{formatDate(startDate)}</p>
-                ) : (
-                  <p>{formatDate(startDate)} ~ {formatDate(new Date(endDate.setDate(endDate.getDate() - 1)))}</p>
-                )}
-              </div>
-            );
-          })
-        ) : (
-          <p>선택한 날짜에 일정이 없습니다.</p>
-        )}
-      </div>
+      
     </div>
   );
 };

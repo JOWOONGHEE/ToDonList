@@ -52,30 +52,12 @@ const db = mongoose.connection.useDb('forum');
 let connections = []; // 연결된 클라이언트를 관리하는 배열
 
 app.post('/api/saveChat', saveChatHandler);
-app.post('/saveChat', (req, res) => {
-  const { userEmail, chatHistory } = req.body;
-  // 채팅 저장 로직 구현
-  console.log(`채팅 저장: ${userEmail}`);
-  res.status(200).send('채팅 저장 성공');
-});
+app.post('/api/sendVerification', sendVerification);
+app.post('/api/verifyPassword', verifyPassword);
+app.get('/api/verifyPassword', verifyPassword);
+app.post('/api/verifyCode', verifyCodeHandler);
+
 // 챗 내용을 저장하는 라우트
-app.post('/api/messages', async (req, res) => {
-  try {
-    const { role, content } = req.body;
-    if (!role || !content) {
-      return res.status(400).json({ error: 'Role and content are required.' });
-    }
-
-    const newMessage = new ChatMessage({ role, content });
-    await newMessage.save();
-    res.status(201).send(newMessage);
-  } catch (error) {
-    console.error('Error saving message:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-
 app.post('/api/messages', async (req, res) => {
   try {
     const { role, content } = req.body;
@@ -91,21 +73,9 @@ app.post('/api/messages', async (req, res) => {
 });
 
 
-app.post('/api/sendVerification', sendVerification);
-app.post('/api/verifyPassword', verifyPassword);
-app.get('/api/verifyPassword', verifyPassword);
-app.post('/api/verifyCode', verifyCodeHandler);
-
 app.post('/api/signup', async (req, res) => {
   try {
     const { email, password } = req.body;
-    // 입력 데이터 검증
-    // if (!email.includes('@')) {
-    //   return res.status(400).json({ error: 'Invalid email format' });
-    // }
-    // if (password.length < 6) {
-    //   return res.status(400).json({ error: 'Password too short' });
-    // }
     
     const hash = await bcrypt.hash(password, 10);
     // 회원가입 로직 (데이터베이스 저장 등)

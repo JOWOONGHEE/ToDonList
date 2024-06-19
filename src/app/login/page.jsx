@@ -19,13 +19,8 @@ export default function Login() {
     console.log("인증 상태:", sessionStatus);
 
     const handleSignIn = async (provider) => {
-        
         console.log('로그인 시도:', provider);
-        const res = await signIn(provider, { 
-            redirect: false,
-            email,
-            password
-        });
+        const res = await signIn(provider, { callbackUrl: '/main' });
         console.log('로그인 응답:', res);
         if (res?.ok) {
             router.push('/main');

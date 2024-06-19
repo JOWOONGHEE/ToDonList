@@ -13,6 +13,8 @@ export default function AiChat() {
   const [chatHistory, setChatHistory] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태 추가
   const [totalPages, setTotalPages] = useState(1); // 총 페이지 수 상태 추가
+  const [currentItems, setCurrentItems] = useState([]);
+
   const chatContainerRef = useRef(null);
   
   // 상태 관리를 위한 추가적인 useState 호출
@@ -24,6 +26,32 @@ export default function AiChat() {
   const api = axios.create({
     baseURL: 'http://localhost:5000/api'
   });
+
+  const itemsPerPage = 2; // 한 페이지에 표시할 항목 수
+
+  useEffect(() => {
+    console.log(`Chat History:`, chatHistory);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    setCurrentItems(chatHistory.slice(indexOfFirstItem, indexOfLastItem));
+    console.log(`Current Items:`, chatHistory.slice(indexOfFirstItem, indexOfLastItem));
+  }, [chatHistory, currentPage, itemsPerPage]);
+  
+  const handleNextPage = () => {
+    if (currentPage <= totalPages) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      console.log(`Updated Page: ${nextPage}`);
+    }
+  };
+  
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
+      console.log(`Updated Page: ${prevPage}`);
+    }
+  };
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -44,8 +72,10 @@ export default function AiChat() {
     try {
       const response = await axios.get(`http://localhost:5000/api/getChats?userEmail=${userEmail}&page=${page}`);
       if (Array.isArray(response.data.chats)) {
-        setChatHistory(response.data.chats);
-        setTotalPages(response.data.totalPages); // 총 페이지 수 설정
+        const filteredChats = response.data.chats.filter(chat => chat.userEmail === userEmail);
+        setChatHistory(filteredChats);
+        const totalItems = filteredChats.length;
+        setTotalPages(Math.ceil(totalItems / itemsPerPage));
       } else {
         console.error('응답 데이터의 "chats" 키가 배열이 아닙니다:', response.data.chats);
         setError('채팅 데이터를 불러오는데 문제가 발생했습니다.'); // 사용자에게 에러 메시지 표시
@@ -145,13 +175,6 @@ export default function AiChat() {
     setMessage("");
   };
 
-  const handlePrevPage = () => {
-    setCurrentPage(currentPage > 1 ? currentPage - 1 : 1);
-  };
-
-  const handleNextPage = () => {
-    setCurrentPage(currentPage + 1); // 여기서는 최대 페이지 수를 체크하지 않습니다. 서버에서 빈 배열을 반환할 수 있습니다.
-  };
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-custom-green-light space-y-8 p-8">
@@ -202,22 +225,24 @@ export default function AiChat() {
           <div className={styles.modalContent}>
             <span className={styles.closeButton} onClick={toggleModal}>&times;</span>
             <h2 className={styles.modalTitle}>채팅 내역</h2>
-            {chatHistory.length > 0 ? (
-              chatHistory.map((chat, index) => (
-                <div key={index} className={styles.chatMessage}>
-                  {chat.chatHistory.map((msg, msgIndex) => (
-                    <div key={msgIndex}>
-                      <strong>{msg.role === 'user' ? '사용자' : '어시스턴트'}:</strong> {msg.content}
-                    </div>
-                  ))}
-                </div>
+            {currentItems.length > 0 ? (
+              currentItems.map((chat, index) => (
+                chat.chatHistory && chat.chatHistory.length > 0 && (
+                  <div key={`chat-${index}`} className={styles.chatMessage}>
+                    {chat.chatHistory.map((msg, msgIndex) => (
+                      <div key={`msg-${index}-${msgIndex}`}>
+                        <strong>{msg.role === 'user' ? '사용자' : '어시스턴트'}:</strong> {msg.content}
+                      </div>
+                    ))}
+                  </div>
+                )
               ))
             ) : (
-              <p>채팅 내역이 없습니다.</p>
+              <div>메시지가 없습니다.</div>
             )}
-            <div className={styles.pagination}>
-              <button onClick={handlePrevPage} disabled={currentPage === 1}>이전</button>
-              <button onClick={handleNextPage}>다음</button>
+            <div className="pagination">
+            <button onClick={handlePrevPage} disabled={currentPage === 1}>이전</button>
+            <button onClick={handleNextPage} disabled={currentPage >= totalPages}>다음</button>
             </div>
           </div>
         </div>
@@ -225,5 +250,3 @@ export default function AiChat() {
     </main>
   );
 }
-
-
