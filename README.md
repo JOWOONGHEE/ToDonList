@@ -1,34 +1,34 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## 구현 기능
+### 로그인 / 회원가입 화면
 
-## Getting Started
+![image](https://github.com/user-attachments/assets/c69b8588-4bbe-4543-936e-96944e807df0)
+![image](https://github.com/user-attachments/assets/5109eb04-0c21-4717-8cee-e007f4d29f28)
 
-First, run the development server:
+### SNS 로그인
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+![image](https://github.com/user-attachments/assets/ae5afb60-ffe5-4e15-b818-e0a07c0e4207)
+![image](https://github.com/user-attachments/assets/3d3e3a7a-e4cc-4221-b97f-5bfc85ccbac3)
+![image](https://github.com/user-attachments/assets/06ac59dd-4a4f-443c-b9b9-f266e9affa03)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 메인화면 / 캘린더 일정추가
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+![image](https://github.com/user-attachments/assets/a51c8993-4ba9-41a3-9f3f-cb7650127591)
+![image](https://github.com/user-attachments/assets/672c9e45-4f7c-46bc-981a-0ad2575f64e0)
+![image](https://github.com/user-attachments/assets/e32b9a23-6a1d-4529-b637-f696870faa3d)
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### AI챗
 
-## Learn More
+![image](https://github.com/user-attachments/assets/ff4bf040-ed5b-4399-913d-908f1435d598)
+![image](https://github.com/user-attachments/assets/321e31f2-400d-4013-9bab-a89612a1cc85)
 
-To learn more about Next.js, take a look at the following resources:
+### 가계부
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+![image](https://github.com/user-attachments/assets/2f498e2b-301b-4a98-95bd-c909b4c9512c)
+![image](https://github.com/user-attachments/assets/2d325230-2a03-49ae-ba62-b2eaa1b826f0)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### 일정추가
 
-## Deploy on Vercel
+![image](https://github.com/user-attachments/assets/4da9caca-e318-43ba-a6be-e45b2c845965)
+![image](https://github.com/user-attachments/assets/bcde2406-57ab-4e50-822d-cb9cebb7205a)
+![image](https://github.com/user-attachments/assets/72175f26-1a6c-415f-85c5-f655efe1ce84)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
